@@ -178,6 +178,12 @@ export class LapInfo
     this.addParagraph();
     this.lap = document.createTextNode(defaultText);
     this.box.appendChild(this.lap);
+    this.addParagraph();
+    this.actualLap = document.createTextNode(defaultText);
+    this.box.appendChild(this.actualLap);
+    this.addParagraph();
+    this.bestLap = document.createTextNode("Best Lap: 00:00");
+    this.box.appendChild(this.bestLap);
     document.body.appendChild(this.box);
   }
   changeStopwatch(newText) {
@@ -185,6 +191,12 @@ export class LapInfo
   }
   changeLap(newText){
     this.lap.nodeValue = newText;
+  }
+  changeActualLap(newText){
+    this.actualLap.nodeValue = newText;
+  }
+  changeBestLap(newText){
+    this.bestLap.nodeValue = newText;
   }
   
   add(text) {
@@ -207,7 +219,7 @@ export class Stopwatch{
         this.ms = 0;
         this.tempo = 10; //num de milésimos por ms
         this.cron;
-        this.format = "00:00:00";
+        this.format = "00:00";
     }
 
     start() {
@@ -223,7 +235,7 @@ export class Stopwatch{
         this.mm = 0;
         this.ss = 0;
         this.ms = 0;
-        this.format = (this.mm < 10 ? '0'+this.mm : this.mm) + ':' + (this.ss < 10 ? '0' + this.ss : this.ss) + ':' + (this.ms < 10 ? '0' + this.ms : this.ms);
+        this.format = (this.mm < 10 ? '0'+this.mm : this.mm) + ':' + (this.ss < 10 ? '0' + this.ss : this.ss);
     }
 
     stop() {
@@ -232,7 +244,7 @@ export class Stopwatch{
         this.mm = 0;
         this.ss = 0;
         this.ms = 0;
-        this.format = (this.mm < 10 ? '0'+this.mm : this.mm) + ':' + (this.ss < 10 ? '0' + this.ss : this.ss) + ':' + (this.ms < 10 ? '0' + this.ms : this.ms); 
+        this.format = (this.mm < 10 ? '0'+this.mm : this.mm) + ':' + (this.ss < 10 ? '0' + this.ss : this.ss); 
     }
     timer(){
 
@@ -252,7 +264,7 @@ export class Stopwatch{
             }
         }
 
-        this.format = (this.mm < 10 ? '0'+this.mm : this.mm) + ':' + (this.ss < 10 ? '0' + this.ss : this.ss) + ':' + (this.ms < 10 ? '0' + this.ms : this.ms);
+        this.format = (this.mm < 10 ? '0'+this.mm : this.mm) + ':' + (this.ss < 10 ? '0' + this.ss : this.ss);
     }
 }
 
@@ -263,7 +275,7 @@ export class gameInfo{
         this.infoBox.style.padding = "6px 14px";
         this.infoBox.style.position = "fixed";
         this.infoBox.style.bottom = "0";
-        this.infoBox.style.right = "0";
+        this.infoBox.style.left = "0";
         this.infoBox.style.backgroundColor = "rgba(255,255,255,0.7)";
         this.infoBox.style.color = "white";
         this.infoBox.style.fontFamily = "sans-serif";
@@ -286,96 +298,3 @@ export class gameInfo{
         document.body.appendChild(this.infoBox);
       }
 }
-
-/*export function finishLap(blocks) {
-    var finishedLap = true;
-    blocks.forEach(function(block){
-        if(block.passedBy == false)
-        finishedLap = false;
-    })
-    return finishedLap;
-}*/
-/*
-export function createTrack1(numBlocksPerSide) 
-{
-    var xPos = 0;
-    var yPos = - (numBlocksPerSide*10)/2;
-    var zPos = 0.1;
-    var track = [new Block(xPos, yPos, zPos, true)];
-
-    for(var i= 1; i<numBlocksPerSide/2; i++){
-        xPos -= 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =1; i<numBlocksPerSide; i++){
-        yPos += 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =1; i<numBlocksPerSide; i++){
-        xPos += 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =1; i<numBlocksPerSide; i++){
-        yPos -= 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =2; i<numBlocksPerSide/2; i++){
-        xPos -= 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-    if(numBlocksPerSide%2 == 0){
-        xPos -= 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    return track;
-}
-
-export function createTrack2(numBlocksPerSide) 
-{
-    var xPos = 0;
-    var yPos = - (numBlocksPerSide*10)/2;
-    var zPos = 0.1;
-    var track = [new Block(xPos, yPos, zPos, true)];
-    
-    for(var i =1; i<numBlocksPerSide/2; i++){
-        xPos -= 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-    
-    for(var i =1; i<numBlocksPerSide; i++){
-        yPos += 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =1; i<numBlocksPerSide/2; i++){
-        xPos += 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =1; i<numBlocksPerSide/2; i++){
-        yPos -= 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =1; i<numBlocksPerSide/2; i++){
-        xPos += 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =1; i<numBlocksPerSide/2; i++){
-        yPos -= 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    for(var i =2; i<numBlocksPerSide/2; i++){
-        xPos -= 10;
-        track.push(new Block(xPos, yPos, zPos, false));
-    }
-
-    return track;
-}*/

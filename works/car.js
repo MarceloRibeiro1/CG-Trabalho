@@ -126,23 +126,23 @@ export class Car{
 
   movement(speedway){
         
-    console.log("Has Passed: " + this.hasPassedRightWay());
-    console.log("Lap: " + this.lap);
+    //console.log("Has Passed: " + this.hasPassedRightWay());
+    //console.log("Lap: " + this.lap);
     if(this.hasPassedRightWay()){
       
       if(this.hitCorner(speedway)){
-        console.log("Hit Corner:" + this.cornerCount );
+        //console.log("Hit Corner:" + this.cornerCount );
         this.cornersPassed[this.cornerCount] = true;
         this.cornerCount +=1;
         this.lapFlag = true;
       }else{
-        console.log("cornerCount == cornersX.length: " + (this.cornerCount == speedway.cornersX.length) );
-        console.log("lapFlag: " + this.lapFlag);
-        console.log("hitFinish: " + this.hitFinishLine(speedway));
+        //console.log("cornerCount == cornersX.length: " + (this.cornerCount == speedway.cornersX.length) );
+        //console.log("lapFlag: " + this.lapFlag);
+        //console.log("hitFinish: " + this.hitFinishLine(speedway));
         if( (this.cornerCount == speedway.cornersX.length) && this.lapFlag && this.hitFinishLine(speedway)){
-          console.log("Hit finish line");
+          //console.log("Hit finish line");
           this.lap++;
-          console.log(this.lap);
+          //console.log(this.lap);
           this.updateCornersPassed();
           this.cornerCount = 0;
           this.lapFlag = false;
@@ -258,7 +258,8 @@ export class Car{
     this.roda2.matrixAutoUpdate = false;
     this.axis1.matrixAutoUpdate = false;
 
-    this.group.rotateY(  angle*Math.sign(this.velocity) );
+    //this.group.rotateY(  angle );
+    this.group.rotateY( angle*Math.sign(this.velocity) );
 
     var mat4 = new THREE.Matrix4();
 
@@ -305,6 +306,7 @@ export class Car{
     this.roda2.matrixAutoUpdate = false;
     this.axis1.matrixAutoUpdate = false;
 
+    //this.group.rotateY( -angle );
     this.group.rotateY( -angle*Math.sign(this.velocity) );
 
 

@@ -62,7 +62,7 @@ var plane = createGroundPlaneWired(600, 600, 50, 50); // width and height
 scene.add(plane);
 
 //Create Speedway
-var speedway = new Speedway(21, 2);
+var speedway = new Speedway(21, 1);
 speedway.blocks.forEach(function(block) {
   scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
   scene.add(block.fundo); //Adiciona na cena o fundo de cada cube do array de blocos 
@@ -102,7 +102,7 @@ function keyboardUpdate() {
   }
   if ( keyboard.pressed("down") )
   {
-    direction = -2;
+    direction = -1;
     car.accelerate(direction, speedway);
   }
 
@@ -111,17 +111,75 @@ function keyboardUpdate() {
   if ( keyboard.pressed(".") ) car.group.rotateY( -angle );
 
   if ( keyboard.pressed("left") ){
+    //car.goLeft(direction*angle);
     car.goLeft(angle);
   }else{
     car.stop();
   }
   if ( keyboard.pressed("right") ){
+   //car.goRight(direction*angle);
    car.goRight(angle);
   }
 
 
   if(direction == 0)  car.slowdown();
   car.group.translateZ(car.velocity);
+
+  //Mudar as pistas: 
+  if(keyboard.pressed("1")){
+    
+    speedway.blocks.forEach(function(block){
+      block.cube.visible = false;
+      block.cubeFundo.visible = false;
+    })
+    speedway = new Speedway(21, 1);
+    speedway.blocks.forEach(function(block) {
+      scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
+      scene.add(block.fundo); //Adiciona na cena o fundo de cada cube do array de blocos 
+    })
+    car.group.visible = false;
+    car = new Car(1)
+    scene.add(car.group);
+    car.placeInitialPosition(speedway.sideSize);
+    car.group.scale.set(0.3, 0.3, 0.3);
+    car.updateNumCorners(speedway);
+    stopwatch = new Stopwatch();
+    swLaps = new Stopwatch();
+    startStopwatchFlag = true;
+
+    lapTimes = [];
+    firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
+    stopwatchInfo.changeBestLap("Best Lap: 00:00")
+    
+  }
+
+  if(keyboard.pressed("2")){
+    
+    speedway.blocks.forEach(function(block){
+      block.cube.visible = false;
+      block.cubeFundo.visible = false;
+    })
+    speedway = new Speedway(21, 2);
+    speedway.blocks.forEach(function(block) {
+      scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
+      scene.add(block.fundo); //Adiciona na cena o fundo de cada cube do array de blocos 
+    })
+    car.group.visible = false;
+    car = new Car(1)
+    scene.add(car.group);
+    car.placeInitialPosition(speedway.sideSize);
+    car.group.scale.set(0.3, 0.3, 0.3);
+    car.updateNumCorners(speedway);
+    stopwatch = new Stopwatch();
+    swLaps = new Stopwatch();
+    startStopwatchFlag = true;
+
+    lapTimes = [];
+    firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
+    stopwatchInfo.changeBestLap("Best Lap: 00:00")
+  }
+
+  //////
 
 }
 
@@ -132,10 +190,7 @@ function cameraControl()
   changeCamera();
   
   if (cameraFree)
-  {
     trackballControls.update();
-    trackballControls.target.set( car.group.position.x, car.group.position.y, car.group.position.z );
-  }
   else
     cameraFollow();
 }
@@ -171,7 +226,7 @@ function setupCamera()
       trackballControls.reset;
       trackballControls.target.set( car.group.position.x, car.group.position.y, car.group.position.z );
       TrackballCamera.up.set( 0,1,0 );
-      TrackballCamera.position.set(car.group.position.x + 50, 50, car.group.position.z + 50);
+      TrackballCamera.position.set(car.group.position.x + 80, 80, car.group.position.z + 80);
       TrackballCamera.lookAt(car.group.position);
       
       // Desativar visibilidade de outros objetos
@@ -189,6 +244,8 @@ function cameraFollow()
   var objectToFollow = car.group;
   var dir = new THREE.Vector3();
   car.group.getWorldDirection(dir);
+  //camera.position.set(objectToFollow.position.x + dir.x*10, 70, objectToFollow.position.z + 70 + dir.z*10);
+  //camera.lookAt(objectToFollow.position.x + dir.x*10, 0, objectToFollow.position.z +dir.z*10);
   camera.position.set(objectToFollow.position.x + dir.x*3 + 50, 50, objectToFollow.position.z + 50 + dir.z*3);
   camera.lookAt(objectToFollow.position.x + dir.x*3, 0, objectToFollow.position.z +dir.z*3);
 }
@@ -204,38 +261,62 @@ function cameraRenderer ()
 
 //Laps Info
 var stopwatchInfo = new LapInfo();
+var bestM = 61;
+var bestS = 61;
+
 function updateLapInfo() {
   stopwatchInfo.changeStopwatch(stopwatch.format);
   stopwatchInfo.changeLap("Lap: " + car.lap + "/4");
-
+  stopwatchInfo.changeActualLap(swLaps.format);
+  
   if((car.lap == 1) && firstLapFlag){
-    stopwatchInfo.add("Lap 1: " + swLaps.format);
+    //stopwatchInfo.add("Lap 1: " + swLaps.format);
     lapTimes.push(swLaps.format);
+    updateBestLap(swLaps.mm, swLaps.ss);
     swLaps.clear();
     firstLapFlag = false;
   }else {
     if((car.lap == 2) && secLapFlag){
-      stopwatchInfo.add("Lap 2: " + swLaps.format);
+      //stopwatchInfo.add("Lap 2: " + swLaps.format);
       lapTimes.push(swLaps.format);
+      updateBestLap(swLaps.mm, swLaps.ss);
       swLaps.clear();
       secLapFlag = false;
     }else{
       if((car.lap == 3) && thirdLapFlag){
-        stopwatchInfo.add("Lap 3: " + swLaps.format);
+        //stopwatchInfo.add("Lap 3: " + swLaps.format);
         lapTimes.push(swLaps.format);
+        updateBestLap(swLaps.mm, swLaps.ss);
         swLaps.clear();
         thirdLapFlag = false;
       }else{
         if((car.lap == 4) && fourthLapFlag){
-          stopwatchInfo.add("Lap 4: " + swLaps.format);
+          //stopwatchInfo.add("Lap 4: " + swLaps.format);
           lapTimes.push(swLaps.format);
-          swLaps.clear();
+          updateBestLap(swLaps.mm, swLaps.ss);
+          //swLaps.clear();
+          swLaps.stop();
           fourthLapFlag = false;
         }
       }
     }
   }
 }
+
+function updateBestLap(M, S){
+  if(M < bestM){
+    stopwatchInfo.changeBestLap("Best Lap: " + (M < 10 ? '0'+ M : M) + ":" + (S < 10 ? '0'+ S : S));
+    bestM = M;
+    bestS = S;
+  }else{
+    if(M == bestM && S < bestS){
+      stopwatchInfo.changeBestLap("Best Lap: " + (M < 10 ? '0'+ M : M) + ":" + (S < 10 ? '0'+ S : S))
+      bestM = M;
+      bestS = S;
+    }
+  }
+}
+
 
 function isGameOver(){
   if(car.lap == 4){
