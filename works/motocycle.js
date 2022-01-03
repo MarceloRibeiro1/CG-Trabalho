@@ -1,4 +1,4 @@
 export class motocycle {
-    // classe criada
+    lapTimes = []
 }
 
