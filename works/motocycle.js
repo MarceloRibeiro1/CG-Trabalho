@@ -1,4 +1,5 @@
 export class motocycle {
-    // classe criada
+    lap = 0;
+
 }
 
