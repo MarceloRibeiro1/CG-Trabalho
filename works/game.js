@@ -69,6 +69,7 @@ var steeringClamp = .5;
 var maxEngineForce = 1500;
 var maxBreakingForce = 100;
 var speed = 0;
+var quat = new THREE.Quaternion();
 
 // Physics variables
 var collisionConfiguration;
@@ -117,14 +118,14 @@ function createObjects() {
   setGroundTexture(ground);
   ground.visible = true
 
-  	// Ramps
+  // Ramps
 	var quaternion = new THREE.Quaternion(0, 0, 0, 1);
 	var ramp;
 	// quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-15));
 	// ramp = createBox(new THREE.Vector3(0, -8.5, 0), quaternion, 20, 4, 10, 0, 0, materialWheels);
 	// createWireFrame(ramp);
 	quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-30));	
-	ramp = createBox(new THREE.Vector3(0, -8.0, 30), quaternion, 8, 8, 15, 0, 0, materialWheels);	
+	ramp = createBox(new THREE.Vector3(0, -8.0, 30), quaternion, 10, 10, 20, 0, 0, materialWheels);	
 	createWireFrame(ramp);	
 	// quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-5));	
 	// ramp = createBox(new THREE.Vector3(-0, -8.5, 0), quaternion, 8, 4, 15, 0, 0, materialWheels);	
@@ -132,10 +133,10 @@ function createObjects() {
 
   var textureLoader = new THREE.TextureLoader();
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
-  cybertruck = new Cybertruck(licensePlate,physicsWorld,syncList);
+  cybertruck = new Cybertruck(licensePlate);
   scene.add(cybertruck.mesh);
-  cybertruck.mesh.position.y = 10;
-  console.log(cybertruck.bodyGeo);
+  console.log(cybertruck.mesh.quaternion);
+  cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
   addPhysicsCar();
 }
@@ -203,7 +204,7 @@ function addPhysicsCar(){
   var transform = new Ammo.btTransform();
   transform.setIdentity();
   transform.setOrigin(new Ammo.btVector3(0, 0, 0));
-  transform.setRotation(new Ammo.btQuaternion(0, 0, 0, 1));
+  transform.setRotation(new Ammo.btQuaternion(0,0,0,1));
   var motionState = new Ammo.btDefaultMotionState(transform);
   var localInertia = new Ammo.btVector3(0, 0, 0);
   var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .3, cybertruck.height * .3, cybertruck.depth * .3));
@@ -251,10 +252,10 @@ function addPhysicsCar(){
 
 
 
-  addWheel(true, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), 1.6,wheelAxleCS);
-  addWheel(true, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), 1.6,wheelAxleCS);
-  addWheel(false, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), 1.6,wheelAxleCS);
-  addWheel(false, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), 1.6,wheelAxleCS);
+  addWheel(true, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), 2.4,wheelAxleCS);
+  addWheel(true, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), 2.4,wheelAxleCS);
+  addWheel(false, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), 2.4,wheelAxleCS);
+  addWheel(false, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), 2.4,wheelAxleCS);
 
   var speedometer;
   speedometer = document.getElementById( 'speedometer' );
@@ -265,7 +266,7 @@ function addPhysicsCar(){
       speed = vehicle.getCurrentSpeedKmHour();
       speedometer.innerHTML = (speed < 0 ? '(R) ' : '') + Math.abs(speed).toFixed(1) + ' km/h';
       breakingForce = 0;
-      engineForce = 10;
+      engineForce = 0;
 
       //vehicleSteering += 0.05
       
@@ -287,8 +288,7 @@ function addPhysicsCar(){
           p = tm.getOrigin();
           q = tm.getRotation();
           //cybertruck.wheels[i].position.set(p.x(), p.y(), p.z());
-          cybertruck.wheels[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
-          //cybertruck.wheels[i].rotation.z = -Math.PI/2;
+          cybertruck.wheelsH[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
       }
 
       tm = vehicle.getChassisWorldTransform();

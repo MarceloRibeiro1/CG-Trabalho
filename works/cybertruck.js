@@ -3,53 +3,13 @@ import * as THREE from '../../build/three.module.js';
 import {ConvexGeometry} from '../build/jsm/geometries/ConvexGeometry.js';
 
 export class Cybertruck {
-	constructor(licensePlateImg,physicsWorld,syncList) {
+	constructor(licensePlateImg) {
 		this.speed = 5;
 		this.wireframes = false;
 		this.width = 8;
 		this.height = 7.5;
 		this.depth = 23;
 		this.mesh = new THREE.Object3D();
-
-        var massVehicle = 1000;
-        var friction = 1000;
-        var suspensionStiffness = 25.0;
-        var suspensionDamping = 2.3;
-        var suspensionCompression = 5.0;
-        var suspensionRestLength = 0.7;
-        var rollInfluence = 0.2;
-        var steeringIncrement = .04;
-        var steeringClamp = .5;
-        var maxEngineForce = 1500;
-        var maxBreakingForce = 100;
-
-        // Ammo variables
-        // var collisionConfiguration;
-        // var dispatcher;
-        // var broadphase;
-        // var solver;
-        // var physicsWorld;
-        // var syncList = [];
-        // var time = 0;
-        // var clock = new THREE.Clock();
-
-        //import('../libs/other/ammo.wasm.js')
-        // Ammo().then(function() {
-        //     initPhysics();
-        // });
-        
-        function initPhysics() {
-            // Physics configuration
-            collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
-            dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration );
-            broadphase = new Ammo.btDbvtBroadphase();
-            solver = new Ammo.btSequentialImpulseConstraintSolver();
-            physicsWorld = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-            physicsWorld.setGravity( new Ammo.btVector3( 0, -9.82, 0 ) );
-            console.log("aaqui")
-        }
-
-
 
 		let W = this.width,
 			H = this.height,
@@ -68,8 +28,8 @@ export class Cybertruck {
 				[-0.45, -0.1, -0.48],
 				[0.45,  -0.1, -0.48],
 				// top (4–5)
-				[-0.326, 0.5,  0.08],
-				[0.326,  0.5,  0.08],
+				// [-0.326, 0.5,  0.08],
+				// [0.326,  0.5,  0.08],
 				// middle (6–19)
 				[-0.45, -0.1, -0.38],
 				[0.45,  -0.1, -0.38],
@@ -103,10 +63,10 @@ export class Cybertruck {
 				// windows (32–39)
 				[-0.4225,0.27,-0.14],
 				[0.4225, 0.27,-0.14],
-				[-0.379, 0.39,-0.13],
-				[0.379,  0.39,-0.13],
-				[-0.337, 0.47,0.08],
-				[0.337,  0.47,0.08],
+				//  [-0.379, 0.42,-0.13],
+				//  [0.379,  0.42,-0.13],
+				// [-0.337, 0.47,0.08],
+				// [0.337,  0.47,0.08],
 				[-0.425, 0.17,0.36],
 				[0.425,  0.17,0.36]
 			],
@@ -193,35 +153,30 @@ export class Cybertruck {
 				[33,32,38],
 				[38,39,33]
 			],
+			parteTras = [
+				[-0.379, 0.42,-0.13],
+				[0.379,  0.42,-0.13],
+				[-0.379, 0.2,-0.13],
+				[0.379,  0.2,-0.13],
+				[-0.45, 0.26, -0.5],
+				[0.45,  0.26, -0.5],
+				[-0.45, -0.1, -0.48],
+				[0.45,  -0.1, -0.48],	
+			],
 			bodyFaces = bodyFacesArr.map(toFaces);
             this.bodyGeo = new ConvexGeometry(bodyVertices);
-			var bodyMat = new THREE.MeshStandardMaterial({
+			var bodyMat = new THREE.MeshPhongMaterial({
 				color: 0xbac3c8,
 				wireframe: this.wireframes
 			});
-        
-        // ------------------- AMMO PHYSICS
-        // Chassis
-        // var transform = new Ammo.btTransform();
-        // transform.setIdentity();
-        // transform.setOrigin(new Ammo.btVector3(0, 0, 0));
-        // transform.setRotation(new Ammo.btQuaternion(0, 0, 0, 1));
-        // var motionState = new Ammo.btDefaultMotionState(transform);
-        // var localInertia = new Ammo.btVector3(0, 0, 0);
-        // //bodyGeo.calculateLocalInertia(massVehicle, localInertia);
-        // var bodyCar = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(massVehicle, motionState, bodyGeo, localInertia));
-        // physicsWorld.addRigidBody(bodyCar);
 
-        // // Raycast Vehicle
-        // var engineForce = 0;
-        // var vehicleSteering = 0;
-        // var breakingForce = 0;
-        // var tuning = new Ammo.btVehicleTuning();
-        // var rayCaster = new Ammo.btDefaultVehicleRaycaster(physicsWorld);
-        // var vehicle = new Ammo.btRaycastVehicle(tuning, bodyCar, rayCaster);
-        // vehicle.setCoordinateSystem(0, 1, 2);
-        // physicsWorld.addAction(vehicle);
-        
+
+		let	bodyVerticesVec = parteTras.map(toVectors);
+		let bodytras = new ConvexGeometry(bodyVerticesVec);
+
+
+        let bodypartetras = new THREE.Mesh(bodytras,bodyMat);
+		this.mesh.add(bodypartetras);
 
 		let body = new THREE.Mesh(this.bodyGeo,bodyMat);
 		this.mesh.add(body);
@@ -351,9 +306,11 @@ export class Cybertruck {
 
 		// II. Top Parts
 		// A. Window
-		let windowMat = new THREE.MeshStandardMaterial({
+		let windowMat = new THREE.MeshLambertMaterial({
 				color: 0x101010,
-				wireframe: this.wireframes
+				wireframe: this.wireframes,
+				opacity: 0.95,
+				transparent: true
 			}),
 			lightMat = new THREE.MeshBasicMaterial({
 				color: 0xffffff,
@@ -1331,34 +1288,6 @@ export class Cybertruck {
 		this.mesh.add(licensePlate);
 
 		// XIII. Wheels
-
-        // var wheelDirectionCS0 = new Ammo.btVector3(0, -1, 0);
-        // var wheelAxleCS = new Ammo.btVector3(-1, 0, 0);
-    
-        // function addWheel(isFront, pos, radius) {
-
-        //     var wheelInfo = vehicle.addWheel(
-        //             pos,
-        //             wheelDirectionCS0,
-        //             wheelAxleCS,
-        //             suspensionRestLength,
-        //             radius,
-        //             tuning,
-        //             isFront);
-    
-        //     wheelInfo.set_m_suspensionStiffness(suspensionStiffness);
-        //     wheelInfo.set_m_wheelsDampingRelaxation(suspensionDamping);
-        //     wheelInfo.set_m_wheelsDampingCompression(suspensionCompression);
-        //     wheelInfo.set_m_frictionSlip(friction);
-        //     wheelInfo.set_m_rollInfluence(rollInfluence);
-        // }
-    
-        // addWheel(true, new Ammo.btVector3(W*0.43,H*-0.27,D*0.36), 32);
-        // addWheel(true, new Ammo.btVector3(W*-0.43,H*-0.27,D*0.36), 32);
-        // addWheel(false, new Ammo.btVector3(W*0.43,H*-0.27,D*-0.3), 32);
-        // addWheel(false, new Ammo.btVector3(W*-0.43,H*-0.27,D*-0.3), 32);
-
-
 		// A. Tire
 		let wheelGeo = new THREE.CylinderBufferGeometry(H*0.23,H*0.23,W*0.14,32),
 			wheelMat = new THREE.MeshLambertMaterial({
@@ -1441,26 +1370,44 @@ export class Cybertruck {
 		}
 
 		// C. Positioning and Cloning
-		this.wheels[0].position.set(W*0.58,H*-0.27,D*0.36);
-		this.wheels[0].rotation.z = -Math.PI/2;
+		var geo = new THREE.BoxGeometry(0.1, 0.1, 1, 1, 1)
+		this.wheelsH = [
+			new THREE.Mesh(geo,hubBaseMat)
+		];
+		this.wheelsH[0] = new THREE.Mesh(geo,hubBaseMat);
+		//this.wheelsH[0].visible = false;
+		this.wheelsH[1] = new THREE.Mesh(geo,hubBaseMat);
+		//this.wheelsH[1].visible = false;
+		this.wheelsH[2] = new THREE.Mesh(geo,hubBaseMat);
+		//this.wheelsH[2].visible = false;
+		this.wheelsH[3] = new THREE.Mesh(geo,hubBaseMat);
+		//this.wheelsH[3].visible = false;
+		
+
+		this.wheelsH[0].position.set(W*0.50,H*-0.27,D*0.36);
+		this.wheels[0].rotation.z = Math.PI/2;
 		this.wheels[0].castShadow = true;
 		this.wheels[0].receiveShadow = true;
-		this.mesh.add(this.wheels[0]);
+		this.wheelsH[0].add(this.wheels[0]);
+		this.mesh.add(this.wheelsH[0])
 
 		this.wheels.push(this.wheels[0].clone());
-		this.wheels[1].position.set(W*-0.58,H*-0.27,D*0.36);
-		this.wheels[1].rotation.z = Math.PI/2;
-		this.mesh.add(this.wheels[1]);
+		this.wheelsH[1].position.set(W*-0.50,H*-0.27,D*0.36);
+		this.wheels[1].rotation.z = -Math.PI/2;
+		this.wheelsH[1].add(this.wheels[1]);
+		this.mesh.add(this.wheelsH[1])
 
 		this.wheels.push(this.wheels[0].clone());
-		this.wheels[2].position.set(W*0.58,H*-0.27,D*-0.3);
-		this.wheels[2].rotation.z = -Math.PI/2;
-		this.mesh.add(this.wheels[2]);
+		this.wheelsH[2].position.set(W*0.50,H*-0.27,D*-0.3);
+		this.wheels[2].rotation.z = Math.PI/2;
+		this.wheelsH[2].add(this.wheels[2]);
+		this.mesh.add(this.wheelsH[2])
 
 		this.wheels.push(this.wheels[0].clone());
-		this.wheels[3].position.set(W*-0.58,H*-0.27,D*-0.3);
-		this.wheels[3].rotation.z = Math.PI/2;
-		this.mesh.add(this.wheels[3]);
+		this.wheelsH[3].position.set(W*-0.50,H*-0.27,D*-0.3);
+		this.wheels[3].rotation.z = -Math.PI/2;
+		this.wheelsH[3].add(this.wheels[3]);
+		this.mesh.add(this.wheelsH[3])
 
 		// XIV. Light Effects
 		this.headlight = new THREE.SpotLight(0x30d2d5,0);
@@ -1483,50 +1430,11 @@ export class Cybertruck {
 		this.rearlight.castShadow = true;
 		this.rearlight.shadow.mapSize = new THREE.Vector2(512,512);
 		this.mesh.add(this.rearlight);
-		this.mesh.add(this.rearlight.target);
+		this.mesh.add(this.rearlight.target);	
 
-
-
-
-        // var speedometer;
-        // speedometer = document.getElementById( 'speedometer' );
-
-        // function sync(dt) {
-        //     this.speed = vehicle.getCurrentSpeedKmHour();
-        //     speedometer.innerHTML = (this.speed < 0 ? '(R) ' : '') + Math.abs(this.speed).toFixed(1) + ' km/h';
-        //     breakingForce = 0;
-        //     engineForce = 0;
-    
-        //     vehicle.applyEngineForce(engineForce, 2);
-        //     vehicle.applyEngineForce(engineForce, 3);
-    
-        //     //vehicle.setBrake(breakingForce, FRONT_LEFT);
-        //     //vehicle.setBrake(breakingForce, FRONT_RIGHT);
-        //     vehicle.setBrake(breakingForce, 2);
-        //     vehicle.setBrake(breakingForce, 3);
-    
-        //     vehicle.setSteeringValue(vehicleSteering, 0);
-        //     vehicle.setSteeringValue(vehicleSteering, 1);
-    
-        //     var tm, p, q, i;
-        //     var n = vehicle.getNumWheels();
-        //     for (i = 0; i < n; i++) {
-        //         vehicle.updateWheelTransform(i, true);
-        //         tm = vehicle.getWheelTransformWS(i);
-        //         p = tm.getOrigin();
-        //         q = tm.getRotation();
-        //         wheels[i].position.set(p.x(), p.y(), p.z());
-        //         wheels[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
-        //     }
-    
-        //     tm = vehicle.getChassisWorldTransform();
-        //     p = tm.getOrigin();
-        //     q = tm.getRotation();
-        //     bodyGeo.position.set(p.x(), p.y(), p.z());
-        //     bodyGeo.quaternion.set(q.x(), q.y(), q.z(), q.w());
-        // }
-        // syncList.push(sync);
 		
+		
+		//this.mesh.rotation(0,0,Math.PI/2);
 	}
 	move() {
 		let fps = 60,
