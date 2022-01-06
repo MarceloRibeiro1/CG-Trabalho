@@ -142,6 +142,10 @@ function createObjects() {
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
   cybertruck = new Cybertruck(licensePlate);
   scene.add(cybertruck.mesh);
+  scene.add(cybertruck.wheelsH[0]);
+  scene.add(cybertruck.wheelsH[1]);
+  scene.add(cybertruck.wheelsH[2]);
+  scene.add(cybertruck.wheelsH[3]);
   console.log(cybertruck.mesh.quaternion);
   cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
@@ -291,7 +295,7 @@ function addPhysicsCar(){
           tm = vehicle.getWheelTransformWS(i);
           p = tm.getOrigin();
           q = tm.getRotation();
-          //cybertruck.wheels[i].position.set(p.x(), p.y(), p.z());
+          cybertruck.wheelsH[i].position.set(p.x(), p.y(), p.z());
           cybertruck.wheelsH[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
       }
 

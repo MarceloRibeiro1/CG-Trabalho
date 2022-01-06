@@ -1370,6 +1370,7 @@ export class Cybertruck {
 		}
 
 		// C. Positioning and Cloning
+		
 		var geo = new THREE.BoxGeometry(0.1, 0.1, 1, 1, 1)
 		this.wheelsH = [
 			new THREE.Mesh(geo,hubBaseMat)
@@ -1389,26 +1390,48 @@ export class Cybertruck {
 		this.wheels[0].castShadow = true;
 		this.wheels[0].receiveShadow = true;
 		this.wheelsH[0].add(this.wheels[0]);
-		this.mesh.add(this.wheelsH[0])
+		//this.mesh.add(this.wheelsH[0])
 
 		this.wheels.push(this.wheels[0].clone());
 		this.wheelsH[1].position.set(W*-0.50,H*-0.27,D*0.36);
 		this.wheels[1].rotation.z = -Math.PI/2;
 		this.wheelsH[1].add(this.wheels[1]);
-		this.mesh.add(this.wheelsH[1])
+		//this.mesh.add(this.wheelsH[1])
 
 		this.wheels.push(this.wheels[0].clone());
 		this.wheelsH[2].position.set(W*0.50,H*-0.27,D*-0.3);
 		this.wheels[2].rotation.z = Math.PI/2;
 		this.wheelsH[2].add(this.wheels[2]);
-		this.mesh.add(this.wheelsH[2])
+		//this.mesh.add(this.wheelsH[2])
 
 		this.wheels.push(this.wheels[0].clone());
 		this.wheelsH[3].position.set(W*-0.50,H*-0.27,D*-0.3);
 		this.wheels[3].rotation.z = -Math.PI/2;
 		this.wheelsH[3].add(this.wheels[3]);
-		this.mesh.add(this.wheelsH[3])
+		//this.mesh.add(this.wheelsH[3])
 
+/*
+		this.wheels[0].position.set(W*0.43,H*-0.27,D*0.36);
+		this.wheels[0].rotation.z = -Math.PI/2;
+		this.wheels[0].castShadow = true;
+		this.wheels[0].receiveShadow = true;
+		//this.mesh.add(this.wheels[0]);
+
+		this.wheels.push(this.wheels[0].clone());
+		this.wheels[1].position.set(W*-0.43,H*-0.27,D*0.36);
+		this.wheels[1].rotation.z = Math.PI/2;
+		//this.mesh.add(this.wheels[1]);
+
+		this.wheels.push(this.wheels[0].clone());
+		this.wheels[2].position.set(W*0.43,H*-0.27,D*-0.3);
+		this.wheels[2].rotation.z = -Math.PI/2;
+		//this.mesh.add(this.wheels[2]);
+
+		this.wheels.push(this.wheels[0].clone());
+		this.wheels[3].position.set(W*-0.43,H*-0.27,D*-0.3);
+		this.wheels[3].rotation.z = Math.PI/2;
+		//this.mesh.add(this.wheels[3]);
+		*/
 		// XIV. Light Effects
 		this.headlight = new THREE.SpotLight(0x30d2d5,0);
 		this.headlight.position.set(0,0,this.depth * 0.48);
