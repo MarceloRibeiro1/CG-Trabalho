@@ -57,8 +57,8 @@ var keyboard = new KeyboardState();
 // Car
 var cybertruck;
 var objectToFollow;
-var massVehicle = 10;
-var friction = 10;
+var massVehicle = 1000;
+var friction = 1000;
 var suspensionStiffness = 25.0;
 var suspensionDamping = 5.3;
 var suspensionCompression = 2.0;
@@ -66,10 +66,17 @@ var suspensionRestLength = 0.3;
 var rollInfluence = 0.2;
 var steeringIncrement = .04;
 var steeringClamp = .5;
-var maxEngineForce = 1500;
+var maxEngineForce = 2000;
 var maxBreakingForce = 100;
 var speed = 0;
 var quat = new THREE.Quaternion();
+var acceleration = false;
+var braking = false;
+var right = false;
+var left = false;
+var engineForce = 0;
+var vehicleSteering = 0;
+var breakingForce = 0;
 
 // Physics variables
 var collisionConfiguration;
@@ -214,9 +221,6 @@ function addPhysicsCar(){
   
 
   // Raycast Vehicle
-  var engineForce = 0;
-  var vehicleSteering = 0;
-  var breakingForce = 0;
   var tuning = new Ammo.btVehicleTuning();
   var rayCaster = new Ammo.btDefaultVehicleRaycaster(physicsWorld);
   var vehicle = new Ammo.btRaycastVehicle(tuning, bodyCar, rayCaster);
@@ -269,7 +273,7 @@ function addPhysicsCar(){
       engineForce = 0;
 
       //vehicleSteering += 0.05
-      
+      applyForce();
 
       vehicle.applyEngineForce(engineForce, 2);
       vehicle.applyEngineForce(engineForce, 3);
@@ -345,6 +349,54 @@ var swLaps = new Stopwatch();
 
 
 //Move
+function applyForce(){
+  if (acceleration) {
+    if (speed < -1)
+      breakingForce = maxBreakingForce;
+    else engineForce = maxEngineForce;
+  }
+  if (braking) {
+    if (speed > 1)
+      breakingForce = maxBreakingForce;
+    else engineForce = -maxEngineForce / 2;
+  }
+  if (left) {
+    if (vehicleSteering < steeringClamp)
+      vehicleSteering += steeringIncrement;
+  }
+  else {
+    if (right) {
+      if (vehicleSteering > -steeringClamp)
+        vehicleSteering -= steeringIncrement;
+    }
+    else {
+      if (vehicleSteering < -steeringIncrement)
+        vehicleSteering += steeringIncrement;
+      else {
+        if (vehicleSteering > steeringIncrement)
+          vehicleSteering -= steeringIncrement;
+        else {
+          vehicleSteering = 0;
+        }
+      }
+    }
+  }
+}
+
+function keyboardUpdate2() {
+
+  keyboard.update();
+  if ( keyboard.pressed("up")) acceleration = true;
+  else acceleration = false;
+  if ( keyboard.pressed("down")) braking = true;
+  else braking = false;
+  if ( keyboard.pressed("left")) left = true;
+  else left = false;
+  if ( keyboard.pressed("right")) right = true;
+  else right = false
+  
+}
+
 
 function keyboardUpdate() {
 
@@ -414,7 +466,7 @@ function keyboardUpdate() {
     stopwatchInfo.changeBestLap("Best Lap: 00:00")
     
   }
-/*
+
   if(keyboard.pressed("2")){
     
     speedway.blocks.forEach(function(block){
@@ -440,8 +492,8 @@ function keyboardUpdate() {
     firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
     stopwatchInfo.changeBestLap("Best Lap: 00:00")
   }
-*/
-  //////
+
+
 
 }
 
@@ -608,6 +660,7 @@ function render()
 
 
   stats.update(); // Update FPS
+  keyboardUpdate2();
   //if(gameIsOnFlag){
     //keyboardUpdate();
     //car.movement(speedway);
