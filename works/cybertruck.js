@@ -4,7 +4,7 @@ import {ConvexGeometry} from '../build/jsm/geometries/ConvexGeometry.js';
 
 export class Cybertruck {
 	constructor(licensePlateImg) {
-		this.speed = 5;
+		this.speed = 0;
 		this.wireframes = false;
 		this.width = 8;
 		this.height = 7.5;

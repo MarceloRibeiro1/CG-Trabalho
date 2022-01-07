@@ -46,10 +46,22 @@ scene.add(TrackballCamera);
 
 var trackballControls = new TrackballControls( TrackballCamera, renderer.domElement );
 
-var cameraFree = true;
+var cameraFree = false;
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 window.addEventListener( 'resize', function(){onWindowResize(TrackballCamera, renderer)}, false );
+export function onWindowResize(camera, renderer){
+
+  if (camera instanceof THREE.PerspectiveCamera)
+  {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
+  else {
+    // TODO for other cameras
+  }
+}
 
 // To use the keyboard
 var keyboard = new KeyboardState();
@@ -59,14 +71,14 @@ var cybertruck;
 var objectToFollow;
 var massVehicle = 1000;
 var friction = 1000;
-var suspensionStiffness = 25.0;
+var suspensionStiffness = 20.0;
 var suspensionDamping = 5.3;
-var suspensionCompression = 2.0;
-var suspensionRestLength = 0.3;
+var suspensionCompression = 0.3;
+var suspensionRestLength = 0.1;
 var rollInfluence = 0.2;
 var steeringIncrement = .04;
 var steeringClamp = .5;
-var maxEngineForce = 2000;
+var maxEngineForce = 3000;
 var maxBreakingForce = 100;
 var speed = 0;
 var quat = new THREE.Quaternion();
@@ -102,7 +114,7 @@ function initPhysics() {
 	broadphase = new Ammo.btDbvtBroadphase();
 	solver = new Ammo.btSequentialImpulseConstraintSolver();
 	physicsWorld = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-	physicsWorld.setGravity( new Ammo.btVector3( 0, -9.82, 0 ) );
+	physicsWorld.setGravity( new Ammo.btVector3( 0, -12.82, 0 ) );
 }
 
 
@@ -121,7 +133,7 @@ function createWireFrame(mesh)
 
 function createObjects() {
   // Aqui seria a speedway com colisão
-  var ground = createBox(new THREE.Vector3(0, -8.5, 0), ZERO_QUATERNION, 500, 1, 500, 0, 2, materialGround, true);
+  var ground = createBox(new THREE.Vector3(0, -8.5, 0), ZERO_QUATERNION, 800, 1, 800, 0, 2, materialGround, true);
   setGroundTexture(ground);
   ground.visible = true
 
@@ -131,8 +143,8 @@ function createObjects() {
 	// quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-15));
 	// ramp = createBox(new THREE.Vector3(0, -8.5, 0), quaternion, 20, 4, 10, 0, 0, materialWheels);
 	// createWireFrame(ramp);
-	quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-30));	
-	ramp = createBox(new THREE.Vector3(0, -8.0, 30), quaternion, 10, 10, 20, 0, 0, materialWheels);	
+	quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-20));	
+	ramp = createBox(new THREE.Vector3(0, -5.0, 100), quaternion, 20, 10, 50, 0, 0, materialWheels);	
 	createWireFrame(ramp);	
 	// quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-5));	
 	// ramp = createBox(new THREE.Vector3(-0, -8.5, 0), quaternion, 8, 4, 15, 0, 0, materialWheels);	
@@ -218,7 +230,7 @@ function addPhysicsCar(){
   transform.setRotation(new Ammo.btQuaternion(0,0,0,1));
   var motionState = new Ammo.btDefaultMotionState(transform);
   var localInertia = new Ammo.btVector3(0, 0, 0);
-  var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .3, cybertruck.height * .3, cybertruck.depth * .3));
+  var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .5, cybertruck.height * .2, cybertruck.depth * .5));
   carChassi.calculateLocalInertia(massVehicle, localInertia);
   var bodyCar = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(massVehicle, motionState, carChassi, localInertia));
   physicsWorld.addRigidBody(bodyCar);
@@ -254,16 +266,10 @@ function addPhysicsCar(){
 
   }
 
-
-  var roda = createWheelMesh(1.6, 1)
-  roda.position.set(5,12,5);
-
-
-
-  addWheel(true, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), 2.4,wheelAxleCS);
-  addWheel(true, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), 2.4,wheelAxleCS);
-  addWheel(false, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), 2.4,wheelAxleCS);
-  addWheel(false, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), 2.4,wheelAxleCS);
+  addWheel(true, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), cybertruck.height * 0.23,wheelAxleCS);
+  addWheel(true, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), cybertruck.height * 0.23,wheelAxleCS);
+  addWheel(false, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), cybertruck.height * 0.23,wheelAxleCS);
+  addWheel(false, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), cybertruck.height * 0.23,wheelAxleCS);
 
   var speedometer;
   speedometer = document.getElementById( 'speedometer' );
@@ -271,7 +277,8 @@ function addPhysicsCar(){
   //cybertruck.mesh.position.set(0,10,0)
 
   function sync(dt) {
-      speed = vehicle.getCurrentSpeedKmHour();
+      if (!cameraFree) speed = vehicle.getCurrentSpeedKmHour();
+      else speed = cybertruck.speed;
       speedometer.innerHTML = (speed < 0 ? '(R) ' : '') + Math.abs(speed).toFixed(1) + ' km/h';
       breakingForce = 0;
       engineForce = 0;
@@ -279,43 +286,108 @@ function addPhysicsCar(){
       //vehicleSteering += 0.05
       applyForce();
 
-      vehicle.applyEngineForce(engineForce, 2);
-      vehicle.applyEngineForce(engineForce, 3);
+      if (cameraFree) stopMovement(vehicle);
+      else
+        {
+        vehicle.applyEngineForce(engineForce, 2);
+        vehicle.applyEngineForce(engineForce, 3);
+      
+        vehicle.setBrake(breakingForce, 2);
+        vehicle.setBrake(breakingForce, 3);
+      
+        vehicle.setSteeringValue(vehicleSteering, 0);
+        vehicle.setSteeringValue(vehicleSteering, 1);
+      
+        var tm, p, q, i;
+        var n = vehicle.getNumWheels();
+        for (i = 0; i < n; i++) {
+            vehicle.updateWheelTransform(i, true);
+            tm = vehicle.getWheelTransformWS(i);
+            p = tm.getOrigin();
+            q = tm.getRotation();
+            cybertruck.wheelsH[i].position.set(p.x(), p.y(), p.z());
+            cybertruck.wheelsH[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
+        }   
+        tm = vehicle.getChassisWorldTransform();
+        p = tm.getOrigin();
+        q = tm.getRotation();
+        cybertruck.mesh.position.set(p.x(), p.y(), p.z());
+        cybertruck.mesh.quaternion.set(q.x(), q.y(), q.z(), q.w());
+        }
 
-      vehicle.setBrake(breakingForce, 2);
-      vehicle.setBrake(breakingForce, 3);
-
-      vehicle.setSteeringValue(vehicleSteering, 0);
-      vehicle.setSteeringValue(vehicleSteering, 1);
-
-      var tm, p, q, i;
-      var n = vehicle.getNumWheels();
-      for (i = 0; i < n; i++) {
-          vehicle.updateWheelTransform(i, true);
-          tm = vehicle.getWheelTransformWS(i);
-          p = tm.getOrigin();
-          q = tm.getRotation();
-          cybertruck.wheelsH[i].position.set(p.x(), p.y(), p.z());
-          cybertruck.wheelsH[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
-      }
-
-      tm = vehicle.getChassisWorldTransform();
-      p = tm.getOrigin();
-      q = tm.getRotation();
-      cybertruck.mesh.position.set(p.x(), p.y(), p.z());
-      cybertruck.mesh.quaternion.set(q.x(), q.y(), q.z(), q.w());
+        //console.log(engineForce)
   }
   syncList.push(sync);
 }
 
-function createWheelMesh(radius, width) {
-  var t = new THREE.CylinderGeometry(radius, radius, width, 24, 1);
-  t.rotateZ(Math.PI / 2);
-  var mesh = new THREE.Mesh(t, materialWheels);
-    mesh.castShadow = true;
-  mesh.add(new THREE.Mesh(new THREE.BoxGeometry(width * 1.5, radius * 1.75, radius*.25, 1, 1, 1), materialWheels2));
-  scene.add(mesh);
-  return mesh;
+function stopMovement (vehicle){
+
+    if (acceleration) {
+      if (cybertruck.speed < 80)
+      cybertruck.speed++;
+    }
+    if (braking) {
+      if (cybertruck.speed > -80)
+      cybertruck.speed--;
+    }
+    if (left) {
+      if (vehicleSteering < steeringClamp)
+        vehicleSteering += steeringIncrement;
+    }
+    else {
+      if (right) {
+        if (vehicleSteering > -steeringClamp)
+          vehicleSteering -= steeringIncrement;
+      }
+      else {
+        if (vehicleSteering < -steeringIncrement)
+          vehicleSteering += steeringIncrement;
+        else {
+          if (vehicleSteering > steeringIncrement)
+            vehicleSteering -= steeringIncrement;
+          else {
+            vehicleSteering = 0;
+          }
+        }
+      }
+    }
+    if (!acceleration && !braking){
+      if (cybertruck.speed > 5)
+        cybertruck.speed--;
+      else {
+        if (cybertruck.speed < -5)  cybertruck.speed++;
+        else cybertruck.speed = 0
+      }
+    }
+
+    vehicle.setSteeringValue(vehicleSteering, 0);
+    vehicle.setSteeringValue(vehicleSteering, 1);
+  
+    var tm, p, q, i;
+    for (i = 0; i < 2; i++) {
+        vehicle.updateWheelTransform(i, true);
+        tm = vehicle.getWheelTransformWS(i);
+        p = tm.getOrigin();
+        q = tm.getRotation();
+        //cybertruck.wheelsH[i].position.set(p.x(), p.y(), p.z());
+        cybertruck.wheelsH[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
+    }  
+  
+    var tireRadius = cybertruck.height * 0.23,
+    feetPerMin = (cybertruck.speed * 1000) / 60,
+    rpm = feetPerMin / (2 * Math.PI * (tireRadius / 12)),
+    incRotate = (Math.PI * 2) * (rpm / 6e4) * (1e3 / 60);
+
+ 
+    cybertruck.wheels.forEach(e => {
+      e.rotation.x -= incRotate / 10;
+  
+      if (e.rotation.x >= Math.PI * 2)
+        e.rotation.x = 0;
+  
+    });
+    // cybertruck.wheelsH[0].rotation.z = vehicleSteering + Math.PI;
+    // cybertruck.wheelsH[1].rotation.z = vehicleSteering + Math.PI;
 }
 
 
@@ -384,6 +456,11 @@ function applyForce(){
         }
       }
     }
+  }
+  if (!acceleration && !braking){
+    if (speed > 1)
+      breakingForce = maxBreakingForce/4;
+    else engineForce = maxEngineForce / 4;
   }
 }
 
@@ -535,7 +612,7 @@ function setupCamera()
       //   block.cubeFundo.visible = true;
       // })
       // plane.visible = true;
-    
+
     }
     else 
     {
@@ -554,6 +631,17 @@ function setupCamera()
       // })
 
       //plane.visible = false;
+
+      // var pos = new THREE.Vector3,
+      //     quat = new THREE.Vector4,
+      //     i; 
+      // for (i = 0; i < 2; i++) {
+      //   //cybertruck.wheelsH[i].position.copy(pos);
+      //   cybertruck.wheelsH[i].quaternion.copy(quat);
+      //     //cybertruck.wheelsH[i].position.set(pos);
+      //     cybertruck.wheelsH[i].quaternion.set(quat);
+      // } 
+    
     }
 }
 //var objectToFollow = cybertruck.mesh;
