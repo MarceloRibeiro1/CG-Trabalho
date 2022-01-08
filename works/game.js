@@ -22,21 +22,21 @@ var renderer = initRenderer();    // View function in util/utils
 renderer.setClearColor("rgb(30, 30, 40)");
 
 //Stopwatch flags
-var startStopwatchFlag = true;
-var firstLapFlag = true;
-var secLapFlag = true;
-var thirdLapFlag = true;
-var fourthLapFlag = true;
+var startStopwatchFlag = true; // Flag que inicia o cronômetro quando seta para cima é apertado no inicio do jogo
+var firstLapFlag = true; //Flag para atualização da primeira volta
+var secLapFlag = true; //Flag para atualização da segunda volta
+var thirdLapFlag = true; //Flag para atualização da terceira volta
+var fourthLapFlag = true; //Flag para atualização da quarta volta
 
-var gameIsOnFlag = true;
+var gameIsOnFlag = true; //Flag para mostrar as informações das voltas após o termino do jogo
 
-var lapTimes = [];
+var lapTimes = []; //Array que guarda o tempo de cada volta em string
 
-var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000); //Camera principal
   camera.lookAt(0, 0, 0);
   camera.position.set(0,80,80);
   camera.up.set( 0, 1, 0);
-var TrackballCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+var TrackballCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000); //Trackball
   TrackballCamera.lookAt(0, 0, 0);
   TrackballCamera.position.set(30,5,50);
   TrackballCamera.up.set( 0, 1, 0 );
@@ -46,7 +46,7 @@ scene.add(TrackballCamera);
 
 var trackballControls = new TrackballControls( TrackballCamera, renderer.domElement );
 
-var cameraFree = false;
+var cameraFree = false; //Flack que ativa o modo de inspeção
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 window.addEventListener( 'resize', function(){onWindowResize(TrackballCamera, renderer)}, false );
@@ -101,7 +101,7 @@ var syncList = [];
 var time = 0;
 var clock = new THREE.Clock();
 
-Ammo().then(function() {
+Ammo().then(function() { //Tudo que usa a física tem que estar dentro dessa função
 	initPhysics();
 	createObjects();	
 	render();
@@ -133,9 +133,25 @@ function createWireFrame(mesh)
 
 function createObjects() {
   // Aqui seria a speedway com colisão
-  var ground = createBox(new THREE.Vector3(0, -8.5, 0), ZERO_QUATERNION, 800, 1, 800, 0, 2, materialGround, true);
+  var speedway = new Speedway(21, 1);
+  speedway.blocks.forEach(function(block) {
+    physicsWorld.addRigidBody( block.body );
+    scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
+    scene.add(block.fundo); //Adiciona na cena o fundo de cada cube do array de blocos 
+  })
+  speedway.muroDentro.forEach(function(block) {
+    physicsWorld.addRigidBody( block.body );
+    scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
+  })
+  speedway.muroFora.forEach(function(block) {
+    physicsWorld.addRigidBody( block.body );
+    scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
+  })
+  
+  var ground = createBox(new THREE.Vector3(0, -2, 0), ZERO_QUATERNION, 800, 1, 800, 0, 2, materialGround, true);
   setGroundTexture(ground);
   ground.visible = true
+  
 
   // Ramps
 	var quaternion = new THREE.Quaternion(0, 0, 0, 1);
@@ -226,8 +242,8 @@ function addPhysicsCar(){
   // Chassis
   var transform = new Ammo.btTransform();
   transform.setIdentity();
-  transform.setOrigin(new Ammo.btVector3(0, 0, 0));
-  transform.setRotation(new Ammo.btQuaternion(0,0,0,1));
+  transform.setOrigin(new Ammo.btVector3(0, 2, 420));
+  transform.setRotation(new Ammo.btQuaternion(0,-1,0,1));
   var motionState = new Ammo.btDefaultMotionState(transform);
   var localInertia = new Ammo.btVector3(0, 0, 0);
   var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .5, cybertruck.height * .2, cybertruck.depth * .5));
@@ -409,14 +425,16 @@ speedway.blocks.forEach(function(block) {
   scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
   scene.add(block.fundo); //Adiciona na cena o fundo de cada cube do array de blocos 
 })
-*/
+
 //Create car
 var car = new Car(1)
 scene.add(car.group);
 //car.placeInitialPosition(speedway.sideSize);
 car.group.scale.set(0.3, 0.3, 0.3);
 //car.updateNumCorners(speedway);
+*/
 
+cybertruck.updateNumCorners(speedway);
 camera.position.set(car.group.position.x +60 ,car.group.position.y + 60,60);
 
 //Create Stopwatches

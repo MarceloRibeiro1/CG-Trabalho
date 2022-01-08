@@ -11,6 +11,12 @@ export class Cybertruck {
 		this.depth = 23;
 		this.mesh = new THREE.Object3D();
 
+		//Variáveis pro funcionamento da contagem de voltas
+		this.lap = 0;
+		this.cornersPassed = [false];
+		this.cornerCount = 0;
+		this.lapFlag = true;
+
 		let W = this.width,
 			H = this.height,
 			D = this.depth,
@@ -1480,4 +1486,89 @@ export class Cybertruck {
 		});
 		this.mesh.position.z += incZ / scaleBy;
 	}
+
+	//########################################################
+	//Contagem de voltas:
+
+	updateNumCorners(speedway){
+		for(var i=1; i<speedway.cornersX.length; i++){ //Counts how much pieces the speedway has and add a false in cornersPassed for each one
+		  this.cornersPassed.push(false);
+		}
+	}
+
+	hitCorner(speedway){
+		console.log(this.cornerCount);
+		var conditionX;
+		var conditionZ;
+	
+		if((speedway.cornersX[this.cornerCount] >= -5) && (speedway.cornersX[this.cornerCount] <= 5)){
+		  conditionX = (this.mesh.position.x >= -30 && this.mesh.position.x <=30);
+		}else{
+		  if(speedway.cornersX[this.cornerCount] > 0){
+			conditionX = (this.mesh.position.x >= (speedway.cornersX[this.cornerCount] - speedway.blockSize)) && (this.mesh.position.x <= (speedway.cornersX[this.cornerCount] + speedway.blockSize));
+		  }else{
+			conditionX = ((this.mesh.position.x <= (speedway.cornersX[this.cornerCount] + speedway.blockSize)) && (this.mesh.position.x >= (speedway.cornersX[this.cornerCount] - speedway.blockSize)));
+		  }
+		}
+	
+		if((speedway.cornersZ[this.cornerCount] >= -5) && (speedway.cornersZ[this.cornerCount] <= 5)){
+		  conditionZ = (this.mesh.position.z >= -30 && this.mesh.position.z <=30);
+		}else{
+		  if(speedway.cornersZ[this.cornerCount] > 0){
+			conditionZ = (this.mesh.position.z >= (speedway.cornersZ[this.cornerCount] - speedway.blockSize)) && (this.mesh.position.z <= (speedway.cornersZ[this.cornerCount] + speedway.blockSize));
+		  }else{
+			conditionZ = (this.mesh.position.z <= (speedway.cornersZ[this.cornerCount] + speedway.blockSize)) && (this.mesh.position.z >= (speedway.cornersZ[this.cornerCount] - speedway.blockSize));
+		  }
+		}
+	
+		return conditionX && conditionZ;
+	}
+
+	hitFinishLine(speedway){
+    
+		var conditionX;
+		var conditionZ;
+	
+		//Different tests if corners are greater than 0 or less than zero
+	
+		if((speedway.xInitialBlock >= -5) && (speedway.xInitialBlock <= 5)){
+		  conditionX = (this.mesh.position.x >= -10 && this.mesh.position.x <=10);
+		}else{
+		  if(speedway.xInitialBlock > 0){
+			conditionX = (this.mesh.position.x >= speedway.xInitialBlock*0.85) && (this.mesh.position.x <= speedway.xInitialBlock[this.cornerCount]*1.15);
+		  }else{
+			conditionX = ((this.mesh.position.x <= speedway.xInitialBlock[this.cornerCount]*0.85) && (this.mesh.position.x >= speedway.xInitialBlock[this.cornerCount]*1.15));
+		  }
+		}
+	
+		if((speedway.zInitialBlock >= -5) && (speedway.zInitialBlock <= 5)){
+		  conditionZ = (this.mesh.position.z >= -10 && this.mesh.position.z <=10);
+		}else{
+		  if(speedway.zInitialBlock > 0){
+			conditionZ = (this.mesh.position.z >= speedway.zInitialBlock*0.85) && (this.mesh.position.z <= speedway.zInitialBlock*1.15);
+		  }else{
+			conditionZ = (this.mesh.position.z <= speedway.zInitialBlock*0.85) && (this.mesh.position.z >= speedway.zInitialBlock*1.15);
+		  }
+		}
+	
+		return conditionX && conditionZ;
+	}
+
+	hasPassedRightWay(){ // auxiliar function that checks if the car passed all corners in the right sequence
+		var rightWay = true;
+		for(var i=0; i<this.cornerCount; i++){
+		  if(this.cornersPassed[i] == false){
+			rightWay = false;
+		  }
+		}
+		return rightWay;
+	  }
+	
+	  updateCornersPassed(){
+		for(var i=0; i<this.cornersPassed.length; i++){
+		  this.cornersPassed[i] = false;
+		}
+	  }
+
+
 }

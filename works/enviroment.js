@@ -3,14 +3,17 @@ import {TrackballControls} from '../../build/jsm/controls/TrackballControls.js';
 
 export class Block{
     
-    constructor(x, y, z, initial){
+    constructor(x, y, z, initial, muro, zMuro){
         this.x = x;
         this.y = y;
         this.z = z;
         this.initial = initial;
         this.passedBy = false;
-        this.blockSize = 20;
-
+        this.blockSize = 40;
+        this.transformAux = null;
+        this.body;
+        
+        /*
         var cubeGeometry = new THREE.BoxGeometry(this.blockSize*0.98, 0.3, this.blockSize*0.98);
         var cubeGeometry2 = new THREE.BoxGeometry(this.blockSize, 0.2, this.blockSize);
         var cubeMaterial2 = new THREE.MeshPhongMaterial({color: "rgba(255, 0, 0)", side: THREE.DoubleSide,});
@@ -24,7 +27,32 @@ export class Block{
 
         this.cubeFundo = new THREE.Mesh(cubeGeometry2, cubeMaterial2);
         this.cubeFundo.position.set(x, y, z);
-        //scene.add(cube)
+        */
+        
+           
+        this.pos = new THREE.Vector3(this.x, this.y, this.z);
+        this.zeroQuartenion = new THREE.Quaternion(0, 0, 0, 1);
+        
+        if(muro){
+            var muroMaterial = new THREE.MeshPhongMaterial({color: "rgba(0, 0, 0)", side: THREE.DoubleSide,});
+            if(zMuro){
+                this.cube = this.createBox(this.pos, this.zeroQuartenion, this.blockSize, 5, this.blockSize*0.10, 2, muroMaterial, true);
+            }else{
+                this.cube = this.createBox(this.pos, this.zeroQuartenion, this.blockSize*0.10, 5, this.blockSize, 2, muroMaterial, true);
+            }
+            
+        }else{
+            var cubeMaterial2 = new THREE.MeshPhongMaterial({color: "rgba(255, 0, 0)", side: THREE.DoubleSide,});
+
+            if(initial){
+                var cubeMaterial = new THREE.MeshPhongMaterial({color: "rgba(255, 126, 0)", side: THREE.DoubleSide,});
+            }else{
+                var cubeMaterial = new THREE.MeshPhongMaterial({color: "rgba(235, 235, 220)", side: THREE.DoubleSide,});
+            }
+
+            this.cube = this.createBox(this.pos, this.zeroQuartenion, this.blockSize*0.98, 0.2, this.blockSize*0.98, 2, cubeMaterial, true);
+            this.cubeFundo = this.createBox(this.pos, this.zeroQuartenion, this.blockSize, 0.1, this.blockSize, 2, cubeMaterial2, true);
+        }
     }
 
     get block() {
@@ -33,17 +61,48 @@ export class Block{
     get fundo(){
         return this.cubeFundo;
     }
+
+    createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false) {
+        if(!this.transformAux)
+            this.transformAux = new Ammo.btTransform();
+        var shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
+        var geometry = new Ammo.btBoxShape(new Ammo.btVector3(w * 0.5, l * 0.5, h * 0.5));
+    
+        var mesh = new THREE.Mesh(shape, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = receiveShadow;
+        mesh.position.copy(pos);
+        mesh.quaternion.copy(quat);
+        //scene.add( mesh );
+    
+        var transform = new Ammo.btTransform();
+        transform.setIdentity();
+        transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+        transform.setRotation(new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w));
+        var motionState = new Ammo.btDefaultMotionState(transform);
+    
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        geometry.calculateLocalInertia(0, localInertia);
+    
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(0, motionState, geometry, localInertia);
+        this.body = new Ammo.btRigidBody(rbInfo);
+        this.body.setFriction(friction);
+    
+        return mesh;
+    }
 }
 
 export class Speedway{
     constructor(sideSize, type){
-        this.blockSize = 20;
+        this.blockSize = 40;
         this.xInitialBlock = 0;
         this.yInitialBlock = 0.1;
         this.zInitialBlock = (sideSize*this.blockSize)/2;
         this.sideSize = sideSize;
         this.type = type;
-        this.blocks = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock, true)];
+        this.blocks = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock, true, false, false)];
+        this.muroDentro = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock - (this.blockSize/2), false, true, true)]
+        this.muroFora = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock + (this.blockSize/2), false, true, true)]
         this.xPos = this.xInitialBlock;
         this.zPos = this.zInitialBlock;
         this.cornersX = [];
@@ -54,7 +113,17 @@ export class Speedway{
     }
 
     addBlock(x, y, z){
-        this.blocks.push(new Block(x, y, z, false));
+        this.blocks.push(new Block(x, y, z, false, false, false));
+    }
+
+    addMuroZ(x, y, z){ //Adiciona o muro distanciado entre si no eixo Z
+        this.muroDentro.push(new Block(x, y, z - (this.blockSize/2), false, true, true));
+        this.muroFora.push(new Block(x, y, z + (this.blockSize/2), false, true, true));
+    }
+
+    addMuroX(x, y, z){ //Adiciona o muro distanciado entre si no eixo X
+        this.muroDentro.push(new Block(x - (this.blockSize/2), y, z, false, true, false));
+        this.muroFora.push(new Block(x + (this.blockSize/2), y, z, false, true, false));
     }
 
     createTrack1() 
@@ -62,43 +131,73 @@ export class Speedway{
         for(var i= 1; i<this.sideSize/2; i++){
             this.xPos -= this.blockSize;
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
 
+        //Checkpoint pra completar a volta
         this.cornersX.push(this.xPos);
         this.cornersZ.push(this.zPos);
-        console.log(this.cornersX[0]);
 
         for(var i =1; i<this.sideSize; i++){
             this.zPos -= this.blockSize;
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
         }
-        
+
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
+
+        //Checkpoint pra completar a volta
         this.cornersX.push(this.xPos);
         this.cornersZ.push(this.zPos);
 
         for(var i =1; i<this.sideSize; i++){
             this.xPos += this.blockSize;
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
 
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
         this.cornersX.push(this.xPos);
         this.cornersZ.push(this.zPos);
 
         for(var i =1; i<this.sideSize; i++){
             this.zPos += this.blockSize;
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
         }
 
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro .pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
         this.cornersX.push(this.xPos);
         this.cornersZ.push(this.zPos);
 
         for(var i =2; i<this.sideSize/2; i++){
             this.xPos -= this.blockSize;
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
         if(this.sideSize%2 == 0){
             this.xPos -= this.blockSize;
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
     }
 
