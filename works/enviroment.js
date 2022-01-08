@@ -1,5 +1,6 @@
 import * as THREE from '../../build/three.module.js';
 import {TrackballControls} from '../../build/jsm/controls/TrackballControls.js';
+import { degreesToRadians} from "../libs/util/util.js";
 
 export class Block{
     
@@ -12,22 +13,6 @@ export class Block{
         this.blockSize = 40;
         this.transformAux = null;
         this.body;
-        
-        /*
-        var cubeGeometry = new THREE.BoxGeometry(this.blockSize*0.98, 0.3, this.blockSize*0.98);
-        var cubeGeometry2 = new THREE.BoxGeometry(this.blockSize, 0.2, this.blockSize);
-        var cubeMaterial2 = new THREE.MeshPhongMaterial({color: "rgba(255, 0, 0)", side: THREE.DoubleSide,});
-        if(initial){
-            var cubeMaterial = new THREE.MeshPhongMaterial({color: "rgba(255, 126, 0)", side: THREE.DoubleSide,});
-        }else{
-            var cubeMaterial = new THREE.MeshPhongMaterial({color: "rgba(235, 235, 220)", side: THREE.DoubleSide,});
-        }        
-        this.cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        this.cube.position.set(x, y, z);
-
-        this.cubeFundo = new THREE.Mesh(cubeGeometry2, cubeMaterial2);
-        this.cubeFundo.position.set(x, y, z);
-        */
         
            
         this.pos = new THREE.Vector3(this.x, this.y, this.z);
@@ -60,6 +45,65 @@ export class Block{
     }
     get fundo(){
         return this.cubeFundo;
+    }
+
+    createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false) {
+        if(!this.transformAux)
+            //this.transformAux = new Ammo.btTransform();
+        var shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
+        var geometry = new Ammo.btBoxShape(new Ammo.btVector3(w * 0.5, l * 0.5, h * 0.5));
+    
+        var mesh = new THREE.Mesh(shape, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = receiveShadow;
+        mesh.position.copy(pos);
+        mesh.quaternion.copy(quat);
+        //scene.add( mesh );
+    
+        var transform = new Ammo.btTransform();
+        transform.setIdentity();
+        transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+        transform.setRotation(new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w));
+        var motionState = new Ammo.btDefaultMotionState(transform);
+    
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        geometry.calculateLocalInertia(0, localInertia);
+    
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(0, motionState, geometry, localInertia);
+        this.body = new Ammo.btRigidBody(rbInfo);
+        this.body.setFriction(friction);
+    
+        return mesh;
+    }
+}
+
+export class Ramp{
+
+    constructor(x, y, z, blockSize){
+        this.transformAux = null;
+        this.body;
+        this.ramp = new THREE.Group();;
+        this.angle = -15;
+
+        var quaternion = new THREE.Quaternion(0, 0, 0, 1);
+        var rampMaterial = new THREE.MeshPhongMaterial({color: "rgba(235, 235, 220)", side: THREE.DoubleSide,});
+        var vec = new THREE.Vector3(0, 0, 1);
+        quaternion.setFromAxisAngle(vec , degreesToRadians(this.angle));
+        var baseQuartenion = new THREE.Quaternion(0, 0, 0, 1);	
+
+        var ramp1 = this.createBox(new THREE.Vector3(x, y ,z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial);
+        this.bodys = [this.body];
+        var base = this.createBox(new THREE.Vector3(x- (blockSize*0.65), y, z), baseQuartenion, blockSize*0.9, blockSize*0.37, blockSize*0.9, 0, rampMaterial);
+        this.bodys.push(this.body);
+
+        quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), degreesToRadians(-this.angle));
+
+        var ramp2 = this.createBox(new THREE.Vector3(x-(blockSize*1.3), y, z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial);
+        this.bodys.push(this.body);
+
+        this.ramp.add(ramp1);
+        this.ramp.add(base);
+        this.ramp.add(ramp2);	
     }
 
     createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false) {
@@ -101,15 +145,18 @@ export class Speedway{
         this.sideSize = sideSize;
         this.type = type;
         this.blocks = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock, true, false, false)];
-        this.muroDentro = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock - (this.blockSize/2), false, true, true)]
-        this.muroFora = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock + (this.blockSize/2), false, true, true)]
+        this.muroDentro = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock - (this.blockSize/2), false, true, true)];
+        this.muroFora = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock + (this.blockSize/2), false, true, true)];
         this.xPos = this.xInitialBlock;
         this.zPos = this.zInitialBlock;
+        this.ramps = [new Ramp((this.xPos - 3*this.blockSize), (this.yInitialBlock-2), this.zPos, this.blockSize)];
         this.cornersX = [];
         this.cornersZ = [];
         this.piecesCount = 0;
         if(type == 1) this.createTrack1();
         if(type == 2) this.createTrack2();
+
+        
     }
 
     addBlock(x, y, z){
@@ -124,6 +171,14 @@ export class Speedway{
     addMuroX(x, y, z){ //Adiciona o muro distanciado entre si no eixo X
         this.muroDentro.push(new Block(x - (this.blockSize/2), y, z, false, true, false));
         this.muroFora.push(new Block(x + (this.blockSize/2), y, z, false, true, false));
+    }
+
+    addRamp(x, y, z){
+        this.ramps.push(new Ramp(x, y-this.blockSize*0.05, z, this.blockSize));
+    }
+
+    addRampZ(x, y, z){
+        this.ramps.push(new RampZ(x, y-this.blockSize*0.05, z, this.blockSize));
     }
 
     createTrack1() 
@@ -147,6 +202,7 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
         }
+        this.addRampZ(this.xPos , this.yInitialBlock, this.zPos + (this.sideSize*this.blockSize)/2);
 
         //Fix muro
         this.muroFora.pop();
@@ -162,6 +218,7 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
+        this.addRamp((this.xPos - (this.sideSize*this.blockSize)/2), this.yInitialBlock, this.zPos);
 
         //Fix muro
         this.muroFora.pop();
@@ -178,6 +235,8 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
         }
+
+        this.addRampZ(this.xPos , this.yInitialBlock, this.zPos - (this.sideSize*this.blockSize)/2);
 
         //Fix muro
         this.muroDentro.pop();
@@ -255,6 +314,65 @@ export class Speedway{
             this.xPos -= this.blockSize;
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
         }
+    }
+}
+
+export class RampZ{
+
+    constructor(x, y, z, blockSize){
+        this.transformAux = null;
+        this.body;
+        this.ramp = new THREE.Group();;
+        this.angle = -15;
+
+        var quaternion = new THREE.Quaternion(0, 0, 0, 1);
+        var rampMaterial = new THREE.MeshPhongMaterial({color: "rgba(235, 235, 220)", side: THREE.DoubleSide,});
+        var vec = new THREE.Vector3(1, 0, 0);
+        quaternion.setFromAxisAngle(vec , degreesToRadians(-this.angle));
+        var baseQuartenion = new THREE.Quaternion(0, 0, 0, 1);	
+
+        var ramp1 = this.createBox(new THREE.Vector3(x, y ,z), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial);
+        this.bodys = [this.body];
+        var base = this.createBox(new THREE.Vector3(x, y, z - (blockSize*0.65)), baseQuartenion, blockSize*0.9, blockSize*0.37, blockSize*0.9, 0, rampMaterial);
+        this.bodys.push(this.body);
+
+        quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(   this.angle));
+
+        var ramp2 = this.createBox(new THREE.Vector3(x, y, z-(blockSize*1.3)), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial);
+        this.bodys.push(this.body);
+
+        this.ramp.add(ramp1);
+        this.ramp.add(base);
+        this.ramp.add(ramp2);	
+    }
+
+    createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false) {
+        if(!this.transformAux)
+            this.transformAux = new Ammo.btTransform();
+        var shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
+        var geometry = new Ammo.btBoxShape(new Ammo.btVector3(w * 0.5, l * 0.5, h * 0.5));
+    
+        var mesh = new THREE.Mesh(shape, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = receiveShadow;
+        mesh.position.copy(pos);
+        mesh.quaternion.copy(quat);
+        //scene.add( mesh );
+    
+        var transform = new Ammo.btTransform();
+        transform.setIdentity();
+        transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+        transform.setRotation(new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w));
+        var motionState = new Ammo.btDefaultMotionState(transform);
+    
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        geometry.calculateLocalInertia(0, localInertia);
+    
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(0, motionState, geometry, localInertia);
+        this.body = new Ammo.btRigidBody(rbInfo);
+        this.body.setFriction(friction);
+    
+        return mesh;
     }
 }
 

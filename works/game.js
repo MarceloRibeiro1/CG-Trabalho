@@ -28,9 +28,26 @@ var secLapFlag = true; //Flag para atualização da segunda volta
 var thirdLapFlag = true; //Flag para atualização da terceira volta
 var fourthLapFlag = true; //Flag para atualização da quarta volta
 
+//Create Stopwatches
+var stopwatch = new Stopwatch();
+var swLaps = new Stopwatch(); 
+
+//Laps Info
+var stopwatchInfo = new LapInfo();
+var bestM = 61;
+var bestS = 61;
+
 var gameIsOnFlag = true; //Flag para mostrar as informações das voltas após o termino do jogo
 
 var lapTimes = []; //Array que guarda o tempo de cada volta em string
+
+//Speedway infos:
+var swCornersX;
+var swCornersZ;
+var swInitx;
+var swInitz;
+var blockSize;
+
 
 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000); //Camera principal
   camera.lookAt(0, 0, 0);
@@ -69,8 +86,8 @@ var keyboard = new KeyboardState();
 // Car
 var cybertruck;
 var objectToFollow;
-var massVehicle = 1000;
-var friction = 1000;
+var massVehicle = 500;//1000;
+var friction = 500;//1000;
 var suspensionStiffness = 20.0;
 var suspensionDamping = 5.3;
 var suspensionCompression = 0.3;
@@ -131,9 +148,7 @@ function createWireFrame(mesh)
 	mesh.add( wireframe );
 }
 
-function createObjects() {
-  // Aqui seria a speedway com colisão
-  var speedway = new Speedway(21, 1);
+function initSpeedway(speedway){
   speedway.blocks.forEach(function(block) {
     physicsWorld.addRigidBody( block.body );
     scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
@@ -147,24 +162,28 @@ function createObjects() {
     physicsWorld.addRigidBody( block.body );
     scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
   })
+  speedway.ramps.forEach(function(block) {
+    block.bodys.forEach(function(body){
+      physicsWorld.addRigidBody( body );
+    })
+    scene.add(block.ramp);  
+  })
+
+  swCornersX = speedway.cornersX;
+  swCornersZ = speedway.cornersZ;;
+  swInitx = speedway.xInitialBlock;
+  swInitz = speedway.zInitialBlock;
+  blockSize = speedway.blockSize;
+}
+
+function createObjects() {
+  // Aqui seria a speedway com colisão
+  var speedway = new Speedway(21, 1);
+  initSpeedway(speedway);
   
-  var ground = createBox(new THREE.Vector3(0, -2, 0), ZERO_QUATERNION, 800, 1, 800, 0, 2, materialGround, true);
+  var ground = createBox(new THREE.Vector3(0, -2, 0), ZERO_QUATERNION, 1000, 1, 1000, 0, 2, materialGround, true);
   setGroundTexture(ground);
   ground.visible = true
-  
-
-  // Ramps
-	var quaternion = new THREE.Quaternion(0, 0, 0, 1);
-	var ramp;
-	// quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-15));
-	// ramp = createBox(new THREE.Vector3(0, -8.5, 0), quaternion, 20, 4, 10, 0, 0, materialWheels);
-	// createWireFrame(ramp);
-	quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-20));	
-	ramp = createBox(new THREE.Vector3(0, -5.0, 100), quaternion, 20, 10, 50, 0, 0, materialWheels);	
-	createWireFrame(ramp);	
-	// quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(-5));	
-	// ramp = createBox(new THREE.Vector3(-0, -8.5, 0), quaternion, 8, 4, 15, 0, 0, materialWheels);	
-	// createWireFrame(ramp);	
 
   var textureLoader = new THREE.TextureLoader();
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
@@ -178,6 +197,8 @@ function createObjects() {
   cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
   addPhysicsCar();
+
+  cybertruck.updateNumCorners(swCornersX);
 }
 
 function setGroundTexture(mesh)
@@ -406,40 +427,9 @@ function stopMovement (vehicle){
     // cybertruck.wheelsH[1].rotation.z = vehicleSteering + Math.PI;
 }
 
-
-
-// Show axes (parameter is size of each axis)
-//var axesHelper = new THREE.AxesHelper( 12 );
-//scene.add( axesHelper );
-
 //Light
 initDefaultBasicLight(scene, true);
-/*
-//Create the ground plane
-var plane = createGroundPlaneWired(600, 600, 50, 50); // width and height
-scene.add(plane);
 
-//Create Speedway
-var speedway = new Speedway(21, 1);
-speedway.blocks.forEach(function(block) {
-  scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
-  scene.add(block.fundo); //Adiciona na cena o fundo de cada cube do array de blocos 
-})
-
-//Create car
-var car = new Car(1)
-scene.add(car.group);
-//car.placeInitialPosition(speedway.sideSize);
-car.group.scale.set(0.3, 0.3, 0.3);
-//car.updateNumCorners(speedway);
-*/
-
-cybertruck.updateNumCorners(speedway);
-camera.position.set(car.group.position.x +60 ,car.group.position.y + 60,60);
-
-//Create Stopwatches
-var stopwatch = new Stopwatch();
-var swLaps = new Stopwatch();
 
 
 //Move
@@ -485,8 +475,16 @@ function applyForce(){
 function keyboardUpdate2() {
 
   keyboard.update();
-  if ( keyboard.pressed("up")) acceleration = true;
-  else acceleration = false;
+  if ( keyboard.pressed("up")){
+    acceleration = true;
+
+    if(startStopwatchFlag){
+      stopwatch.start();
+      swLaps.start();
+      startStopwatchFlag = false;
+    }
+
+  }else acceleration = false;
   if ( keyboard.pressed("down")) braking = true;
   else braking = false;
   if ( keyboard.pressed("left")) left = true;
@@ -498,45 +496,6 @@ function keyboardUpdate2() {
 
 
 function keyboardUpdate() {
-
-  keyboard.update();
-
-  var direction = 0;
-
-  if ( keyboard.pressed("up")){
-    direction = 1;
-    car.accelerate(direction, speedway);
-
-    if(startStopwatchFlag){
-      stopwatch.start();
-      swLaps.start();
-      startStopwatchFlag = false;
-    }
-  }
-  if ( keyboard.pressed("down") )
-  {
-    direction = -1;
-    car.accelerate(direction, speedway);
-  }
-
-  var angle = degreesToRadians(3);
-  if ( keyboard.pressed(",") )  car.group.rotateY(  angle );
-  if ( keyboard.pressed(".") ) car.group.rotateY( -angle );
-
-  if ( keyboard.pressed("left") ){
-    //car.goLeft(direction*angle);
-    car.goLeft(angle);
-  }else{
-    car.stop();
-  }
-  if ( keyboard.pressed("right") ){
-   //car.goRight(direction*angle);
-   car.goRight(angle);
-  }
-
-
-  if(direction == 0)  car.slowdown();
-  car.group.translateZ(car.velocity);
 
   //Mudar as pistas: 
   if(keyboard.pressed("1")){
@@ -591,9 +550,6 @@ function keyboardUpdate() {
     firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
     stopwatchInfo.changeBestLap("Best Lap: 00:00")
   }
-
-
-
 }
 
 //Camera
@@ -681,38 +637,33 @@ function cameraRenderer ()
 }
 
 
-//Laps Info
-var stopwatchInfo = new LapInfo();
-var bestM = 61;
-var bestS = 61;
-
 function updateLapInfo() {
   stopwatchInfo.changeStopwatch(stopwatch.format);
-  stopwatchInfo.changeLap("Lap: " + car.lap + "/4");
+  stopwatchInfo.changeLap("Lap: " + cybertruck.lap + "/4");
   stopwatchInfo.changeActualLap(swLaps.format);
   
-  if((car.lap == 1) && firstLapFlag){
+  if((cybertruck.lap == 1) && firstLapFlag){
     //stopwatchInfo.add("Lap 1: " + swLaps.format);
     lapTimes.push(swLaps.format);
     updateBestLap(swLaps.mm, swLaps.ss);
     swLaps.clear();
     firstLapFlag = false;
   }else {
-    if((car.lap == 2) && secLapFlag){
+    if((cybertruck.lap == 2) && secLapFlag){
       //stopwatchInfo.add("Lap 2: " + swLaps.format);
       lapTimes.push(swLaps.format);
       updateBestLap(swLaps.mm, swLaps.ss);
       swLaps.clear();
       secLapFlag = false;
     }else{
-      if((car.lap == 3) && thirdLapFlag){
+      if((cybertruck.lap == 3) && thirdLapFlag){
         //stopwatchInfo.add("Lap 3: " + swLaps.format);
         lapTimes.push(swLaps.format);
         updateBestLap(swLaps.mm, swLaps.ss);
         swLaps.clear();
         thirdLapFlag = false;
       }else{
-        if((car.lap == 4) && fourthLapFlag){
+        if((cybertruck.lap == 4) && fourthLapFlag){
           //stopwatchInfo.add("Lap 4: " + swLaps.format);
           lapTimes.push(swLaps.format);
           updateBestLap(swLaps.mm, swLaps.ss);
@@ -741,7 +692,7 @@ function updateBestLap(M, S){
 
 
 function isGameOver(){
-  if(car.lap == 4){
+  if(cybertruck.lap == 4){
     if(gameIsOnFlag)  gameOverInf();
     gameIsOnFlag = false;
 
@@ -771,12 +722,12 @@ function render()
 
   stats.update(); // Update FPS
   keyboardUpdate2();
-  //if(gameIsOnFlag){
+  if(gameIsOnFlag){
     //keyboardUpdate();
-    //car.movement(speedway);
-  //}
-  //updateLapInfo();
-  //isGameOver();
+    cybertruck.movement(swCornersX, swCornersZ, swInitx, swInitz, blockSize);
+  }
+  updateLapInfo();
+  isGameOver();
   cameraControl();
   requestAnimationFrame(render);
   cameraRenderer(); // Render scene 
