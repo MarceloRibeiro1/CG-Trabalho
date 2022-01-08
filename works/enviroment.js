@@ -227,7 +227,6 @@ export class Speedway{
 
         //Checkpoint pra completar a volta
         this.cornersX.push(this.xPos);
-        this.cornersX.push(this.xPos);
         this.cornersZ.push(this.zPos);
 
         for(var i =1; i<this.sideSize; i++){
@@ -244,7 +243,7 @@ export class Speedway{
         this.muroDentro .pop();
 
         //Checkpoint pra completar a volta
-        this.cornersX.push(this.xPos);
+    
         this.cornersX.push(this.xPos);
         this.cornersZ.push(this.zPos);
 

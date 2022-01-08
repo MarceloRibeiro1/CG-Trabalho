@@ -1492,8 +1492,8 @@ export class Cybertruck {
 
 	movement(cornersX, cornersZ, initX, initZ, blockSize){
         
-		//console.log("Has Passed: " + this.hasPassedRightWay());
-		//console.log("Lap: " + this.lap);
+		console.log("Has Passed: " + this.hasPassedRightWay());
+		console.log("Lap: " + this.lap);
 		if(this.hasPassedRightWay()){
 		  
 		  if(this.hitCorner(cornersX, cornersZ, blockSize)){
@@ -1502,13 +1502,13 @@ export class Cybertruck {
 			this.cornerCount +=1;
 			this.lapFlag = true;
 		  }else{
-			//console.log("cornerCount == cornersX.length: " + (this.cornerCount == speedway.cornersX.length) );
-			//console.log("lapFlag: " + this.lapFlag);
-			//console.log("hitFinish: " + this.hitFinishLine(speedway));
+			console.log("cornerCount == cornersX.length: " + (this.cornerCount == cornersX.length) );
+			console.log("lapFlag: " + this.lapFlag);
+			console.log("hitFinish: " + this.hitFinishLine(initX, initZ));
 			if( (this.cornerCount == cornersX.length) && this.lapFlag && this.hitFinishLine(initX, initZ)){
-			  //console.log("Hit finish line");
+			  console.log("Hit finish line");
 			  this.lap++;
-			  //console.log(this.lap);
+			  console.log(this.lap);
 			  this.updateCornersPassed();
 			  this.cornerCount = 0;
 			  this.lapFlag = false;

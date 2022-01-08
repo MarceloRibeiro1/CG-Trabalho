@@ -86,12 +86,12 @@ var keyboard = new KeyboardState();
 // Car
 var cybertruck;
 var objectToFollow;
-var massVehicle = 500;//1000;
-var friction = 500;//1000;
-var suspensionStiffness = 20.0;
-var suspensionDamping = 5.3;
-var suspensionCompression = 0.3;
-var suspensionRestLength = 0.1;
+var massVehicle = 800;
+var friction = 3000;
+var suspensionStiffness = 30.0;
+var suspensionDamping = 3.3;
+var suspensionCompression = 6.3;
+var suspensionRestLength = 0.3;
 var rollInfluence = 0.2;
 var steeringIncrement = .04;
 var steeringClamp = .5;
@@ -131,7 +131,7 @@ function initPhysics() {
 	broadphase = new Ammo.btDbvtBroadphase();
 	solver = new Ammo.btSequentialImpulseConstraintSolver();
 	physicsWorld = new Ammo.btDiscreteDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration );
-	physicsWorld.setGravity( new Ammo.btVector3( 0, -12.82, 0 ) );
+	physicsWorld.setGravity( new Ammo.btVector3( 0, -15.82, 0 ) );
 }
 
 
@@ -190,10 +190,14 @@ function createObjects() {
   cybertruck = new Cybertruck(licensePlate);
   scene.add(cybertruck.mesh);
   scene.add(cybertruck.wheelsH[0]);
+  cybertruck.wheelsH[0].scale.set(1.2,1.2,1.2);
   scene.add(cybertruck.wheelsH[1]);
+  cybertruck.wheelsH[1].scale.set(1.2,1.2,1.2);
   scene.add(cybertruck.wheelsH[2]);
+  cybertruck.wheelsH[2].scale.set(1.2,1.2,1.2);
   scene.add(cybertruck.wheelsH[3]);
-  console.log(cybertruck.mesh.quaternion);
+  cybertruck.wheelsH[3].scale.set(1.2,1.2,1.2);
+  //console.log(cybertruck.mesh.quaternion);
   cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
   addPhysicsCar();
@@ -207,7 +211,7 @@ function setGroundTexture(mesh)
 	textureLoader.load( "../assets/textures/grid.png", function ( texture ) {
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
-		texture.repeat.set( 60, 60 );
+		texture.repeat.set( 100, 100 );
 		mesh.material.map = texture;
 		mesh.material.needsUpdate = true;
 	} );
@@ -303,10 +307,10 @@ function addPhysicsCar(){
 
   }
 
-  addWheel(true, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), cybertruck.height * 0.23,wheelAxleCS);
-  addWheel(true, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*0.36), cybertruck.height * 0.23,wheelAxleCS);
-  addWheel(false, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), cybertruck.height * 0.23,wheelAxleCS);
-  addWheel(false, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), cybertruck.height * 0.23,wheelAxleCS);
+  addWheel(true, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*0.3), cybertruck.height * 0.23*1.2,wheelAxleCS);
+  addWheel(true, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*0.3), cybertruck.height * 0.23*1.2,wheelAxleCS);
+  addWheel(false, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), cybertruck.height * 0.23*1.2,wheelAxleCS);
+  addWheel(false, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), cybertruck.height * 0.23*1.2,wheelAxleCS);
 
   var speedometer;
   speedometer = document.getElementById( 'speedometer' );
@@ -434,10 +438,20 @@ initDefaultBasicLight(scene, true);
 
 //Move
 function applyForce(){
+  
+
   if (acceleration) {
-    if (speed < -1)
-      breakingForce = maxBreakingForce;
-    else engineForce = maxEngineForce;
+    if (speed < 200){
+        if (speed < -1)
+          breakingForce = maxBreakingForce;
+        else {
+          if (speed < 100)
+            engineForce = 3*maxEngineForce;
+          else
+          engineForce = maxEngineForce;
+        }
+        
+    }
   }
   if (braking) {
     if (speed > 1)
@@ -470,6 +484,7 @@ function applyForce(){
       breakingForce = maxBreakingForce/4;
     else engineForce = maxEngineForce / 4;
   }
+  
 }
 
 function keyboardUpdate2() {
