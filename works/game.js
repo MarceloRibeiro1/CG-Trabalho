@@ -108,6 +108,8 @@ var engineForce = 0;
 var vehicleSteering = 0;
 var breakingForce = 0;
 
+
+
 // Physics variables
 var collisionConfiguration;
 var dispatcher;
@@ -190,10 +192,25 @@ function createObjects() {
   var textureLoader = new THREE.TextureLoader();
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
   cybertruck = new Cybertruck(licensePlate);
-  addCar(0, 2, 420);
+  scene.add(cybertruck.mesh);
+  scene.add(cybertruck.wheelsH[0]);
+  cybertruck.wheelsH[0].scale.set(1.2,1.2,1.2);
+  scene.add(cybertruck.wheelsH[1]);
+  cybertruck.wheelsH[1].scale.set(1.2,1.2,1.2);
+  scene.add(cybertruck.wheelsH[2]);
+  cybertruck.wheelsH[2].scale.set(1.2,1.2,1.2);
+  scene.add(cybertruck.wheelsH[3]);
+  cybertruck.wheelsH[3].scale.set(1.2,1.2,1.2);
+  //console.log(cybertruck.mesh.quaternion);
+  cybertruck.mesh.quaternion.copy(quat)
+  objectToFollow = cybertruck.mesh;
+  addPhysicsCar(0, 2, 420);
+
+  cybertruck.updateNumCorners(swCornersX);
+  //addCar(0, 2, 420);
   
 }
-
+/*
 function addCar(x, y, z){
   scene.add(cybertruck.mesh);
   scene.add(cybertruck.wheelsH[0]);
@@ -210,7 +227,7 @@ function addCar(x, y, z){
   addPhysicsCar(x, y, z);
 
   cybertruck.updateNumCorners(swCornersX);
-}
+}*/
 
 function setGroundTexture(mesh)
 {
@@ -551,14 +568,15 @@ function switchSpeedway(sw){
   swInitz = speedway.zInitialBlock;
   blockSize = speedway.blockSize;
 
-
+/*
   //remove old car
-  scene.remove(cybertruck);
+  removeCar();
   //add new car
   var textureLoader = new THREE.TextureLoader();
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
   cybertruck = new Cybertruck(licensePlate);
   addCar(0, 2, 420);
+*/
 
   stopwatch = new Stopwatch();
   swLaps = new Stopwatch();
@@ -568,6 +586,15 @@ function switchSpeedway(sw){
   firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
   stopwatchInfo.changeBestLap("Best Lap: 00:00")
 }
+ /*
+function removeCar(){
+  scene.remove(cybertruck);
+  scene.remove(cybertruck.mesh);
+  scene.remove(cybertruck.wheelsH[0]);
+  scene.remove(cybertruck.wheelsH[1]);
+  scene.remove(cybertruck.wheelsH[2]);
+  scene.remove(cybertruck.wheelsH[3]);
+}*/
 
 
 function keyboardUpdate() {
