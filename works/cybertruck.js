@@ -315,7 +315,7 @@ export class Cybertruck {
 		let windowMat = new THREE.MeshLambertMaterial({
 				color: 0x101010,
 				wireframe: this.wireframes,
-				opacity: 0.95,
+				opacity: 0.93,
 				transparent: true
 			}),
 			lightMat = new THREE.MeshBasicMaterial({
@@ -371,15 +371,15 @@ export class Cybertruck {
 		this.mesh.add(topLight);
 
 		// C. Sliding Door
-		let slidingDoorMat = new THREE.MeshStandardMaterial({
+		let slidingDoorMat = new THREE.MeshPhongMaterial({
 				color: 0x767c7f,
 				wireframe: this.wireframes
 			}),
 			slidingDoorVerticesArr = [
 				[-0.35,0.274,-0.472],
 				[0.35, 0.274,-0.472],
-				[-0.35,0.407,-0.145],
-				[0.35, 0.407,-0.145]
+				[-0.35,0.42,-0.145],
+				[0.35, 0.42,-0.145]
 			],
 			slidingDoorVertices = slidingDoorVerticesArr.map(toVectors),
 			slidingDoorFacesArr = [
