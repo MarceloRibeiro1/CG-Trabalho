@@ -42,6 +42,7 @@ var gameIsOnFlag = true; //Flag para mostrar as informações das voltas após o
 var lapTimes = []; //Array que guarda o tempo de cada volta em string
 
 //Speedway infos:
+var speedway;
 var swCornersX;
 var swCornersZ;
 var swInitx;
@@ -120,7 +121,8 @@ var clock = new THREE.Clock();
 
 Ammo().then(function() { //Tudo que usa a física tem que estar dentro dessa função
 	initPhysics();
-	createObjects();	
+	createObjects();
+  switchSpeedway(1);	
 	render();
 });
 
@@ -178,7 +180,7 @@ function initSpeedway(speedway){
 
 function createObjects() {
   // Aqui seria a speedway com colisão
-  var speedway = new Speedway(21, 1);
+  speedway = new Speedway(21, 2);
   initSpeedway(speedway);
   
   var ground = createBox(new THREE.Vector3(0, -2, 0), ZERO_QUATERNION, 1000, 1, 1000, 0, 2, materialGround, true);
@@ -188,6 +190,11 @@ function createObjects() {
   var textureLoader = new THREE.TextureLoader();
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
   cybertruck = new Cybertruck(licensePlate);
+  addCar(0, 2, 420);
+  
+}
+
+function addCar(x, y, z){
   scene.add(cybertruck.mesh);
   scene.add(cybertruck.wheelsH[0]);
   cybertruck.wheelsH[0].scale.set(1.2,1.2,1.2);
@@ -200,7 +207,7 @@ function createObjects() {
   //console.log(cybertruck.mesh.quaternion);
   cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
-  addPhysicsCar();
+  addPhysicsCar(x, y, z);
 
   cybertruck.updateNumCorners(swCornersX);
 }
@@ -262,12 +269,12 @@ function createBox(pos, quat, w, l, h, mass = 0, friction = 1, material, receive
 	return mesh;
 }
 
-function addPhysicsCar(){
+function addPhysicsCar(x, y, z){
   // ------------------- AMMO PHYSICS
   // Chassis
   var transform = new Ammo.btTransform();
   transform.setIdentity();
-  transform.setOrigin(new Ammo.btVector3(0, 2, 420));
+  transform.setOrigin(new Ammo.btVector3(x, y, z));
   transform.setRotation(new Ammo.btQuaternion(0,-1,0,1));
   var motionState = new Ammo.btDefaultMotionState(transform);
   var localInertia = new Ammo.btVector3(0, 0, 0);
@@ -506,7 +513,60 @@ function keyboardUpdate2() {
   else left = false;
   if ( keyboard.pressed("right")) right = true;
   else right = false
+
+  if(keyboard.pressed("1")) switchSpeedway(1);
+  if(keyboard.pressed("2")) switchSpeedway(2);
   
+}
+
+function switchSpeedway(sw){
+  //Remove old speedway:
+  speedway.blocks.forEach(function(block) {
+    physicsWorld.removeRigidBody( block.body );
+    scene.remove(block.block); 
+    scene.remove(block.fundo); 
+  })
+  speedway.muroDentro.forEach(function(block) {
+    physicsWorld.removeRigidBody( block.body );    
+    scene.remove(block.block); 
+  })
+  speedway.muroFora.forEach(function(block) {
+    physicsWorld.removeRigidBody( block.body );
+    scene.remove(block.block); 
+  })
+  speedway.ramps.forEach(function(block) {
+    block.bodys.forEach(function(body){
+      physicsWorld.removeRigidBody( body );
+    })
+    scene.remove(block.ramp);  
+  })
+
+  //
+  //add new speedway
+  speedway = new Speedway(21, sw);
+  initSpeedway(speedway);
+  swCornersX = speedway.cornersX;
+  swCornersZ = speedway.cornersZ;;
+  swInitx = speedway.xInitialBlock;
+  swInitz = speedway.zInitialBlock;
+  blockSize = speedway.blockSize;
+
+
+  //remove old car
+  scene.remove(cybertruck);
+  //add new car
+  var textureLoader = new THREE.TextureLoader();
+  let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
+  cybertruck = new Cybertruck(licensePlate);
+  addCar(0, 2, 420);
+
+  stopwatch = new Stopwatch();
+  swLaps = new Stopwatch();
+  startStopwatchFlag = true;
+
+  lapTimes = [];
+  firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
+  stopwatchInfo.changeBestLap("Best Lap: 00:00")
 }
 
 
