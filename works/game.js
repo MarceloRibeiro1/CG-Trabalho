@@ -601,6 +601,19 @@ function keyboardUpdate2() {
       tm.setRotation(new Ammo.btQuaternion(0, 1,0, 1));
     }
 
+    if(keyboard.down("R")) {
+      var tm;
+      tm = vehicle.getChassisWorldTransform();
+      if(speedway.type == 3){
+        tm.setOrigin(new Ammo.btVector3(-300,3,0));
+        tm.setRotation(new Ammo.btQuaternion(0, 0,0, -1));
+      }else{
+        tm.setOrigin(new Ammo.btVector3(0,3,300));
+        tm.setRotation(new Ammo.btQuaternion(0, 1,0, -1));
+      }
+      
+    }
+
   }else{
     acceleration = false;
     breaking = true;
@@ -686,6 +699,7 @@ function showInformation()
     controls.add("1,2,3,4 para mudar de pista");
     controls.add("ESPAÇO para modo inspeção");
     controls.add("W,A,S,D para desvirar o carro");
+    controls.add("R para colocar o carro na linha de chegada");
     controls.show();
     controls.infoBox.style.backgroundColor = "rgba(0,0,0,0.2)";
 }
