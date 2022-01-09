@@ -113,4 +113,5 @@ function render()
   lightFollowingCamera(light, camera) // Makes light follow the camera
   requestAnimationFrame(render); // Show events
   renderer.render(scene, camera) // Render scene
+  console.log(camera)
 }
