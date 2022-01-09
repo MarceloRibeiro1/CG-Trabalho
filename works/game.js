@@ -88,7 +88,7 @@ export function onWindowResize(camera, renderer){
   }
 }
 // spotlight
-var spotlight = new THREE.SpotLight( "rgb: 255,255,255",0,0,Math.PI/8,0.5)
+var spotlight = new THREE.SpotLight( "white",0,0,Math.PI/8,0.5)
 spotlight.visible = false;
 spotlight.castShadow = true;
 spotlight.shadow.mapSize.width = 1024;
@@ -393,12 +393,17 @@ function addPhysicsCar(x, y, z){
       breakingForce = 0;
       engineForce = 0;
 
-      //vehicleSteering += 0.05
-      applyForce();
-
-      if (cameraFree) stopMovement(vehicle);
+      if (cameraFree) {
+        var tm;
+        stopMovement(vehicle);
+        tm = vehicle.getChassisWorldTransform();
+        tm.setOrigin( new Ammo.btVector3(cybertruck.mesh.position.x, cybertruck.mesh.position.y+0, cybertruck.mesh.position.z));
+        tm.setRotation(new Ammo.btQuaternion(cybertruck.mesh.quaternion.x, cybertruck.mesh.quaternion.y, cybertruck.mesh.quaternion.z, cybertruck.mesh.quaternion.w))
+      }
       else
-        {
+      {
+        applyForce();
+
         vehicle.applyEngineForce(engineForce, 2);
         vehicle.applyEngineForce(engineForce, 3);
       
@@ -423,15 +428,15 @@ function addPhysicsCar(x, y, z){
         q = tm.getRotation();
         cybertruck.mesh.position.set(p.x(), p.y(), p.z());
         cybertruck.mesh.quaternion.set(q.x(), q.y(), q.z(), q.w());
-        }
+      }
 
-        //console.log(engineForce)
   }
   syncList.push(sync);
 }
 
 function stopMovement (vehicle){
 
+  var tm, p, q, i;
     if (acceleration) {
       if (cybertruck.speed < 80)
       cybertruck.speed++;
@@ -473,15 +478,14 @@ function stopMovement (vehicle){
     vehicle.setSteeringValue(vehicleSteering, 0);
     vehicle.setSteeringValue(vehicleSteering, 1);
   
-    var tm, p, q, i;
-    for (i = 0; i < 2; i++) {
+    //var tm, p, q, i;
+    for (i = 0; i < 4; i++) {
         vehicle.updateWheelTransform(i, true);
         tm = vehicle.getWheelTransformWS(i);
         p = tm.getOrigin();
         q = tm.getRotation();
-        //cybertruck.wheelsH[i].position.set(p.x(), p.y(), p.z());
         cybertruck.wheelsH[i].quaternion.set(q.x(), q.y(), q.z(), q.w());
-    }  
+    }
   
     var tireRadius = cybertruck.height * 0.23,
     feetPerMin = (cybertruck.speed * 1000) / 60,
@@ -494,10 +498,7 @@ function stopMovement (vehicle){
   
       if (e.rotation.x >= Math.PI * 2)
         e.rotation.x = 0;
-  
     });
-    // cybertruck.wheelsH[0].rotation.z = vehicleSteering + Math.PI;
-    // cybertruck.wheelsH[1].rotation.z = vehicleSteering + Math.PI;
 }
 
 
@@ -723,6 +724,8 @@ function setupCamera()
       // })
       // plane.visible = true;
       switchLight()
+
+      physicsWorld.setGravity( new Ammo.btVector3( 0, -15.82, 0 ) )
     }
     else 
     {
@@ -743,6 +746,8 @@ function setupCamera()
       //plane.visible = false;
 
       switchLight()
+
+      physicsWorld.setGravity( new Ammo.btVector3( 0, 0, 0 ) )
     
     }
 }
@@ -792,7 +797,7 @@ function cameraRenderer ()
     renderer.clear(); // Clean the small viewport
 
     renderer.render(scene, map);
-    console.log(map)
+    //console.log(map)
   }
 }
 

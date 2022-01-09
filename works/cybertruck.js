@@ -1531,7 +1531,7 @@ export class Cybertruck {
 	}
 
 	hitCorner(cornersX, cornersZ, blockSize){
-		console.log(this.cornerCount);
+		//console.log(this.cornerCount);
 		var conditionX;
 		var conditionZ;
 	
