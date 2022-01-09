@@ -165,6 +165,7 @@ var engineForce = 0;
 var vehicleSteering = 0;
 var breakingForce = 0;
 var carResize = 0.6;
+var vehicle;
 
 
 
@@ -182,7 +183,7 @@ var clock = new THREE.Clock();
 Ammo().then(function() { //Tudo que usa a física tem que estar dentro dessa função
 	initPhysics();
 	createObjects();
-  switchSpeedway(3);	
+  switchSpeedway(1);	
 	render();
 });
 
@@ -244,7 +245,7 @@ function initSpeedway(speedway){
 }
 
 function createObjects() {
-  speedway = new Speedway(13, 3);
+  speedway = new Speedway(15, 1);
   initSpeedway(speedway);
   
   var ground = createBox(new THREE.Vector3(0, -2, 0), ZERO_QUATERNION, 1000, 1, 1000, 0, 2, materialGround, true);
@@ -267,30 +268,11 @@ function createObjects() {
   cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
   cybertruck.updateNumCorners(swCornersX);
-  //addCar(0, 2, 420);
-  addPhysicsCar(-260, 2, 0);
-  //addPhysicsCar(0, 5, 260);
-  //this.cybertruck.mesh.castShadow = true;
+  //addPhysicsCar(-300, 2, 0);
+  addPhysicsCar(0, 5, 300);
+  
   
 }
-/*
-function addCar(x, y, z){
-  scene.add(cybertruck.mesh);
-  scene.add(cybertruck.wheelsH[0]);
-  cybertruck.wheelsH[0].scale.set(1.2,1.2,1.2);
-  scene.add(cybertruck.wheelsH[1]);
-  cybertruck.wheelsH[1].scale.set(1.2,1.2,1.2);
-  scene.add(cybertruck.wheelsH[2]);
-  cybertruck.wheelsH[2].scale.set(1.2,1.2,1.2);
-  scene.add(cybertruck.wheelsH[3]);
-  cybertruck.wheelsH[3].scale.set(1.2,1.2,1.2);
-  //console.log(cybertruck.mesh.quaternion);
-  cybertruck.mesh.quaternion.copy(quat)
-  objectToFollow = cybertruck.mesh;
-  addPhysicsCar(x, y, z);
-
-  cybertruck.updateNumCorners(swCornersX);
-}*/
 
 function setGroundTexture(mesh)
 {
@@ -355,8 +337,8 @@ function addPhysicsCar(x, y, z){
   var transform = new Ammo.btTransform();
   transform.setIdentity();
   transform.setOrigin(new Ammo.btVector3(x, y, z));
-  //transform.setRotation(new Ammo.btQuaternion(0,-1,0,1));
-  transform.setRotation(new Ammo.btQuaternion(0,0,0,-1));
+  transform.setRotation(new Ammo.btQuaternion(0,-1,0,1));
+  //transform.setRotation(new Ammo.btQuaternion(0,0,0,-1));
   var motionState = new Ammo.btDefaultMotionState(transform);
   var localInertia = new Ammo.btVector3(0, 0, 0);
   var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .5 * carResize, cybertruck.height * .2 * carResize, cybertruck.depth * .5 * carResize));
@@ -368,7 +350,7 @@ function addPhysicsCar(x, y, z){
   // Raycast Vehicle
   var tuning = new Ammo.btVehicleTuning();
   var rayCaster = new Ammo.btDefaultVehicleRaycaster(physicsWorld);
-  var vehicle = new Ammo.btRaycastVehicle(tuning, bodyCar, rayCaster);
+  vehicle = new Ammo.btRaycastVehicle(tuning, bodyCar, rayCaster);
   vehicle.setCoordinateSystem(0, 1, 2);
   physicsWorld.addAction(vehicle);
 
@@ -575,29 +557,40 @@ function applyForce(){
 function keyboardUpdate2() {
 
   keyboard.update();
-  if ( keyboard.pressed("up")){
-    acceleration = true;
 
-    if(startStopwatchFlag){
-      stopwatch.start();
-      swLaps.start();
-      startStopwatchFlag = false;
-    }
+  if(gameIsOnFlag){
+    if ( keyboard.pressed("up")){
+      acceleration = true;
 
-  }else acceleration = false;
-  if ( keyboard.pressed("down")) braking = true;
-  else braking = false;
-  if ( keyboard.pressed("left")) left = true;
-  else left = false;
-  if ( keyboard.pressed("right")) right = true;
-  else right = false
+      if(startStopwatchFlag){
+        stopwatch.start();
+        swLaps.start();
+        startStopwatchFlag = false;
+      }
 
+    }else acceleration = false;
+    if ( keyboard.pressed("down")) braking = true;
+    else braking = false;
+    if ( keyboard.pressed("left")) left = true;
+    else left = false;
+    if ( keyboard.pressed("right")) right = true;
+    else right = false
+  }else{
+    acceleration = false;
+    breaking = true;
+  }
   if(keyboard.pressed("1")) switchSpeedway(1);
   if(keyboard.pressed("2")) switchSpeedway(2);
+  if(keyboard.pressed("3")) switchSpeedway(3);
+  if(keyboard.pressed("4")) switchSpeedway(4);
+  
+  
   
 }
 
 function switchSpeedway(sw){
+  gameIsOnFlag = true;
+  
   //Remove old speedway:
   speedway.blocks.forEach(function(block) {
     physicsWorld.removeRigidBody( block.body );
@@ -621,7 +614,7 @@ function switchSpeedway(sw){
 
   //
   //add new speedway
-  speedway = new Speedway(13, sw);
+  speedway = new Speedway(15, sw);
   initSpeedway(speedway);
   swCornersX = speedway.cornersX;
   swCornersZ = speedway.cornersZ;;
@@ -629,15 +622,47 @@ function switchSpeedway(sw){
   swInitz = speedway.zInitialBlock;
   blockSize = speedway.blockSize;
 
-/*
-  //remove old car
-  removeCar();
-  //add new car
-  var textureLoader = new THREE.TextureLoader();
-  let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
-  cybertruck = new Cybertruck(licensePlate);
-  addCar(0, 2, 420);
-*/
+  
+  var tm;
+  tm = vehicle.getChassisWorldTransform();
+
+  var w1 = vehicle.getWheelTransformWS(1);
+  var w2 = vehicle.getWheelTransformWS(2);
+  var w3 = vehicle.getWheelTransformWS(3);
+  var w4 = vehicle.getWheelTransformWS(4);
+  
+
+  if(sw == 3){
+    tm.setOrigin(new Ammo.btVector3(-300,3,0));
+    tm.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
+    /*
+    w1.setOrigin(new Ammo.btVector3(-300,3,0));
+    w1.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
+    w2.setOrigin(new Ammo.btVector3(-300,3,0));
+    w2.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
+    w3.setOrigin(new Ammo.btVector3(-300,3,0));
+    w3.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
+    w4.setOrigin(new Ammo.btVector3(-300,3,0));
+    w4.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
+    */
+    
+  }else{
+    tm.setOrigin(new Ammo.btVector3(0,3,300));
+    tm.setRotation(new Ammo.btQuaternion(0,-1,0,1));
+    /*
+    w1.setOrigin(new Ammo.btVector3(0,3,300));
+    w1.setRotation(new Ammo.btQuaternion(0,-1,0,1));
+    w2.setOrigin(new Ammo.btVector3(0,3,300));
+    w2.setRotation(new Ammo.btQuaternion(0,-1,0,1));
+    w3.setOrigin(new Ammo.btVector3(0,3,300));
+    w3.setRotation(new Ammo.btQuaternion(0,-1,0,1));
+    w4.setOrigin(new Ammo.btVector3(0,3,300));
+    w4.setRotation(new Ammo.btQuaternion(0,-1,0,1));
+    */
+    
+  }
+  
+  
 
   stopwatch = new Stopwatch();
   swLaps = new Stopwatch();
@@ -647,73 +672,7 @@ function switchSpeedway(sw){
   firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
   stopwatchInfo.changeBestLap("Best Lap: 00:00")
 }
- /*
-function removeCar(){
-  scene.remove(cybertruck);
-  scene.remove(cybertruck.mesh);
-  scene.remove(cybertruck.wheelsH[0]);
-  scene.remove(cybertruck.wheelsH[1]);
-  scene.remove(cybertruck.wheelsH[2]);
-  scene.remove(cybertruck.wheelsH[3]);
-}*/
 
-
-function keyboardUpdate() {
-
-  //Mudar as pistas: 
-  if(keyboard.pressed("1")){
-    
-    speedway.blocks.forEach(function(block){
-      block.cube.visible = false;
-      block.cubeFundo.visible = false;
-    })
-    speedway = new Speedway(21, 1);
-    speedway.blocks.forEach(function(block) {
-      scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
-      scene.add(block.fundo); //Adiciona na cena o fundo de cada cube do array de blocos 
-    })
-    car.group.visible = false;
-    car = new Car(1)
-    scene.add(car.group);
-    car.placeInitialPosition(speedway.sideSize);
-    car.group.scale.set(0.3, 0.3, 0.3);
-    car.updateNumCorners(speedway);
-    stopwatch = new Stopwatch();
-    swLaps = new Stopwatch();
-    startStopwatchFlag = true;
-
-    lapTimes = [];
-    firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
-    stopwatchInfo.changeBestLap("Best Lap: 00:00")
-    
-  }
-
-  if(keyboard.pressed("2")){
-    
-    speedway.blocks.forEach(function(block){
-      block.cube.visible = false;
-      block.cubeFundo.visible = false;
-    })
-    speedway = new Speedway(21, 2);
-    speedway.blocks.forEach(function(block) {
-      scene.add(block.block); //Adiciona na cena cada cube do array de blocos 
-      scene.add(block.fundo); //Adiciona na cena o fundo de cada cube do array de blocos 
-    })
-    car.group.visible = false;
-    car = new Car(1)
-    scene.add(car.group);
-    car.placeInitialPosition(speedway.sideSize);
-    car.group.scale.set(0.3, 0.3, 0.3);
-    car.updateNumCorners(speedway);
-    stopwatch = new Stopwatch();
-    swLaps = new Stopwatch();
-    startStopwatchFlag = true;
-
-    lapTimes = [];
-    firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
-    stopwatchInfo.changeBestLap("Best Lap: 00:00")
-  }
-}
 
 //Camera
 
@@ -739,6 +698,7 @@ function changeCamera()
 {
   if ( keyboard.down("space") )
   {
+    gameIsOnFlag = true;
     // Troca de camera
     cameraFree = !cameraFree;
     setupCamera();
@@ -924,7 +884,6 @@ function render()
   stats.update(); // Update FPS
   keyboardUpdate2();
   if(gameIsOnFlag){
-    //keyboardUpdate();
     cybertruck.movement(swCornersX, swCornersZ, swInitx, swInitz, blockSize);
   }
   updateLapInfo();

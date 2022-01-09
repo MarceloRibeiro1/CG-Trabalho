@@ -21,9 +21,9 @@ export class Block{
         if(muro){
             var muroMaterial = new THREE.MeshPhongMaterial({color: "rgba(0, 0, 0)", side: THREE.DoubleSide,});
             if(zMuro){
-                this.cube = this.createBox(this.pos, this.zeroQuartenion, this.blockSize, 5, this.blockSize*0.10, 2, muroMaterial, true);
+                this.cube = this.createBox(this.pos, this.zeroQuartenion, this.blockSize, 5, this.blockSize*0.10, 2, muroMaterial, true, true);
             }else{
-                this.cube = this.createBox(this.pos, this.zeroQuartenion, this.blockSize*0.10, 5, this.blockSize, 2, muroMaterial, true);
+                this.cube = this.createBox(this.pos, this.zeroQuartenion, this.blockSize*0.10, 5, this.blockSize, 2, muroMaterial, true, true);
             }
             
         }else{
@@ -47,11 +47,14 @@ export class Block{
         return this.cubeFundo;
     }
 
-    createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false) {
+    createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false, muro = false) {
         if(!this.transformAux)
             //this.transformAux = new Ammo.btTransform();
         var shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
-        var geometry = new Ammo.btBoxShape(new Ammo.btVector3(w * 0.5, l * 0.5, h * 0.5));
+        if(muro)
+            var geometry = new Ammo.btBoxShape(new Ammo.btVector3(w * 0.5, l * 2.3, h * 0.5));
+        else
+            var geometry = new Ammo.btBoxShape(new Ammo.btVector3(w * 0.5, l * 0.5, h * 0.5));
     
         var mesh = new THREE.Mesh(shape, material);
             mesh.castShadow = true;
@@ -163,7 +166,10 @@ export class Speedway{
             this.muroFora = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock + (this.blockSize/2), false, true, true)];
             this.xPos = this.xInitialBlock;
             this.zPos = this.zInitialBlock;
-            this.ramps = [new Ramp((this.xPos - 3*this.blockSize), (this.yInitialBlock-2), this.zPos, this.blockSize)];
+            if(type !=4)
+                this.ramps = [new Ramp((this.xPos - 3*this.blockSize), (this.yInitialBlock-2), this.zPos, this.blockSize)];
+            else
+                this.ramps = [new RampZ((this.xPos - 3*this.blockSize), (this.yInitialBlock-2), this.zPos - (this.sideSize*this.blockSize)/4, this.blockSize)];
         }
         this.cornersX = [];
         this.cornersZ = [];
@@ -196,6 +202,10 @@ export class Speedway{
 
     addRampZ(x, y, z){
         this.ramps.push(new RampZ(x, y-this.blockSize*0.05, z, this.blockSize));
+    }
+
+    addXRamp(x, y, z, isZ){
+        this.ramps.push(new XRamp(x, y-this.blockSize*0.05, z, this.blockSize, isZ));
     }
 
     createTrack1() 
@@ -528,7 +538,148 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
         }
+    }
 
+    createTrack4(){
+        var xI = 0;
+        var xV = 0;
+        var zI = 0;
+        var zV = 0;
+        var auxMuro = 0;
+
+        for(xI; xI<this.sideSize/6; xI++){
+            this.xPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(zI; zI<(this.sideSize/3)*2; zI++){
+            auxMuro++;
+            this.zPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+            if(auxMuro == 7){
+                this.muroFora.pop();
+            }
+            
+        }
+
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+        
+        auxMuro = 0;
+        for(xI; xI<((this.sideSize/6)+(this.sideSize/2)); xI++){
+            auxMuro++;
+            this.xPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+            if(auxMuro==3)
+                this.muroFora.pop();
+        }
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
+
+        for(zI; zI<this.sideSize; zI++){
+            this.zPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+        
+        for(xV; xV<this.sideSize/4; xV++){
+            this.xPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        
+
+        for(zV=1; zV<(this.sideSize/3); zV++){
+            this.zPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        this.addXRamp(this.xPos, this.yInitialBlock, this.zPos - (this.blockSize/4) , true);
+        this.zPos += this.blockSize;
+        
+        for(zV; zV<(this.sideSize/6)*3; zV++){
+            this.zPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(xV; xV<((this.sideSize/3)*2 - this.sideSize/4 - 1); xV++){
+            this.xPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        this.addXRamp(this.xPos - (this.blockSize/4), this.yInitialBlock, this.zPos, false);
+        this.xPos += this.blockSize;
+        for(xV -= 1; xV<this.sideSize; xV++){
+            this.xPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(zV; zV<this.sideSize; zV++){
+            this.zPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        for(xI; xI<=this.sideSize; xI++){
+            this.xPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
     }
 }
 
@@ -559,6 +710,61 @@ export class RampZ{
         this.ramp.add(ramp1);
         this.ramp.add(base);
         this.ramp.add(ramp2);	
+    }
+
+    createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false) {
+        if(!this.transformAux)
+            this.transformAux = new Ammo.btTransform();
+        var shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
+        var geometry = new Ammo.btBoxShape(new Ammo.btVector3(w * 0.5, l * 0.5, h * 0.5));
+    
+        var mesh = new THREE.Mesh(shape, material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = receiveShadow;
+        mesh.position.copy(pos);
+        mesh.quaternion.copy(quat);
+        //scene.add( mesh );
+    
+        var transform = new Ammo.btTransform();
+        transform.setIdentity();
+        transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+        transform.setRotation(new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w));
+        var motionState = new Ammo.btDefaultMotionState(transform);
+    
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        geometry.calculateLocalInertia(0, localInertia);
+    
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(0, motionState, geometry, localInertia);
+        this.body = new Ammo.btRigidBody(rbInfo);
+        this.body.setFriction(friction);
+    
+        return mesh;
+    }
+}
+
+export class XRamp{
+
+    constructor(x, y, z, blockSize, isZ){
+        this.transformAux = null;
+        this.body;
+        this.ramp = new THREE.Group();;
+        this.angle = -20;
+
+        var quaternion = new THREE.Quaternion(0, 0, 0, 1);
+        var rampMaterial = new THREE.MeshPhongMaterial({color: "rgba(235, 235, 220)", side: THREE.DoubleSide,});
+        var vec = new THREE.Vector3(1, 0, 0);
+        quaternion.setFromAxisAngle(vec , degreesToRadians(this.angle));
+
+
+        if(isZ)
+            this.ramp = this.createBox(new THREE.Vector3(x, y ,z), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial);
+        else{
+            quaternion = new THREE.Quaternion(0, 0, 0, 1);
+            quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1) , degreesToRadians(-this.angle));
+            this.ramp = this.createBox(new THREE.Vector3(x, y ,z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial);
+        }
+        this.bodys = [this.body];
+
     }
 
     createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false) {
