@@ -395,10 +395,14 @@ function addPhysicsCar(x, y, z){
       engineForce = 0;
 
       if (cameraFree) {
+        vehicle.setBrake(1000, 0);
+        vehicle.setBrake(1000, 1);
+        vehicle.setBrake(1000, 2);
+        vehicle.setBrake(1000, 3);
         var tm;
         stopMovement(vehicle);
         tm = vehicle.getChassisWorldTransform();
-        tm.setOrigin( new Ammo.btVector3(cybertruck.mesh.position.x, cybertruck.mesh.position.y+0, cybertruck.mesh.position.z));
+        tm.setOrigin( new Ammo.btVector3(cybertruck.mesh.position.x, cybertruck.mesh.position.y, cybertruck.mesh.position.z));
         tm.setRotation(new Ammo.btQuaternion(cybertruck.mesh.quaternion.x, cybertruck.mesh.quaternion.y, cybertruck.mesh.quaternion.z, cybertruck.mesh.quaternion.w))
       }
       else
