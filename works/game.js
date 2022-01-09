@@ -144,12 +144,12 @@ var keyboard = new KeyboardState();
 // Car
 var cybertruck;
 var objectToFollow;
-var massVehicle = 800;
+var massVehicle = 600;
 var friction = 3000;
 var suspensionStiffness = 20.0;
-var suspensionDamping = 5.3;
+var suspensionDamping = 8.3;
 var suspensionCompression = 3.3;
-var suspensionRestLength = 0.5;
+var suspensionRestLength = 0.1;
 var rollInfluence = 0.2;
 var steeringIncrement = .04;
 var steeringClamp = .5;
@@ -385,9 +385,9 @@ function addPhysicsCar(x, y, z){
               tuning,
               isFront);
 
-      wheelInfo.set_m_suspensionStiffness(suspensionStiffness);
+      isFront ? wheelInfo.set_m_suspensionStiffness(suspensionStiffness) : wheelInfo.set_m_suspensionStiffness(suspensionStiffness/2);
       wheelInfo.set_m_wheelsDampingRelaxation(suspensionDamping);
-      wheelInfo.set_m_wheelsDampingCompression(suspensionCompression);
+      isFront ? wheelInfo.set_m_wheelsDampingCompression(suspensionCompression) : wheelInfo.set_m_wheelsDampingCompression(suspensionCompression*10);
       wheelInfo.set_m_frictionSlip(friction);
       wheelInfo.set_m_rollInfluence(rollInfluence);
 
