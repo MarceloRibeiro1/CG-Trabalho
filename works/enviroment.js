@@ -94,14 +94,14 @@ export class Ramp{
         quaternion.setFromAxisAngle(vec , degreesToRadians(this.angle));
         var baseQuartenion = new THREE.Quaternion(0, 0, 0, 1);	
 
-        var ramp1 = this.createBox(new THREE.Vector3(x, y ,z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial);
+        var ramp1 = this.createBox(new THREE.Vector3(x, y ,z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial, true);
         this.bodys = [this.body];
-        var base = this.createBox(new THREE.Vector3(x- (blockSize*0.65), y, z), baseQuartenion, blockSize*0.9, blockSize*0.37, blockSize*0.9, 0, rampMaterial);
+        var base = this.createBox(new THREE.Vector3(x- (blockSize*0.65), y, z), baseQuartenion, blockSize*0.9, blockSize*0.37, blockSize*0.9, 0, rampMaterial, true);
         this.bodys.push(this.body);
 
         quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), degreesToRadians(-this.angle));
 
-        var ramp2 = this.createBox(new THREE.Vector3(x-(blockSize*1.3), y, z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial);
+        var ramp2 = this.createBox(new THREE.Vector3(x-(blockSize*1.3), y, z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial, true);
         this.bodys.push(this.body);
 
         this.ramp.add(ramp1);
@@ -697,14 +697,14 @@ export class RampZ{
         quaternion.setFromAxisAngle(vec , degreesToRadians(-this.angle));
         var baseQuartenion = new THREE.Quaternion(0, 0, 0, 1);	
 
-        var ramp1 = this.createBox(new THREE.Vector3(x, y ,z), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial);
+        var ramp1 = this.createBox(new THREE.Vector3(x, y ,z), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial, true);
         this.bodys = [this.body];
-        var base = this.createBox(new THREE.Vector3(x, y, z - (blockSize*0.65)), baseQuartenion, blockSize*0.9, blockSize*0.37, blockSize*0.9, 0, rampMaterial);
+        var base = this.createBox(new THREE.Vector3(x, y, z - (blockSize*0.65)), baseQuartenion, blockSize*0.9, blockSize*0.37, blockSize*0.9, 0, rampMaterial, true);
         this.bodys.push(this.body);
 
         quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), degreesToRadians(   this.angle));
 
-        var ramp2 = this.createBox(new THREE.Vector3(x, y, z-(blockSize*1.3)), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial);
+        var ramp2 = this.createBox(new THREE.Vector3(x, y, z-(blockSize*1.3)), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial, true);
         this.bodys.push(this.body);
 
         this.ramp.add(ramp1);
@@ -757,11 +757,11 @@ export class XRamp{
 
 
         if(isZ)
-            this.ramp = this.createBox(new THREE.Vector3(x, y ,z), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial);
+            this.ramp = this.createBox(new THREE.Vector3(x, y ,z), quaternion, blockSize*0.9, blockSize/4, (blockSize/2), 0, rampMaterial, true);
         else{
             quaternion = new THREE.Quaternion(0, 0, 0, 1);
             quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1) , degreesToRadians(-this.angle));
-            this.ramp = this.createBox(new THREE.Vector3(x, y ,z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial);
+            this.ramp = this.createBox(new THREE.Vector3(x, y ,z), quaternion, (blockSize/2), blockSize/4, blockSize*0.9, 0, rampMaterial, true);
         }
         this.bodys = [this.body];
 
