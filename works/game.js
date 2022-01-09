@@ -2,6 +2,7 @@ import * as THREE from  '../build/three.module.js';
 import Stats from       '../build/jsm/libs/stats.module.js';
 import { Cybertruck } from       './cybertruck.js';
 import {ConvexGeometry} from '../build/jsm/geometries/ConvexGeometry.js';
+import {TeapotGeometry} from '../build/jsm/geometries/TeapotGeometry.js';
 import {TrackballControls} from '../build/jsm/controls/TrackballControls.js';
 import KeyboardState from '../libs/util/KeyboardState.js';
 import {initRenderer,
@@ -13,8 +14,6 @@ import {LapInfo, Stopwatch, Speedway, gameInfo} from './enviroment.js';
 import { Car} from './car.js';
     
 
-var materialWheels = new THREE.MeshPhongMaterial( { color: "rgb(30, 30, 30)" } );	
-var materialWheels2 = new THREE.MeshPhongMaterial( { color: "rgb(200, 200, 200)" } );	
 
 var stats = new Stats();          // To show FPS information
 var scene = new THREE.Scene();    // Create main scene
@@ -50,15 +49,24 @@ var swInitz;
 var blockSize;
 
 
-var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000); //Camera principal
+var camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 1000); //Camera principal
   camera.lookAt(0, 0, 0);
   camera.position.set(0,80,80);
   camera.up.set( 0, 1, 0);
-var TrackballCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000); //Trackball
+var TrackballCamera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 1000); //Trackball
   TrackballCamera.lookAt(0, 0, 0);
   TrackballCamera.position.set(30,5,50);
   TrackballCamera.up.set( 0, 1, 0 );
 
+var vcWidth = 200; 
+var vcHeidth = 200; 
+var s = 75; // Estimated size for orthographic projection
+var map = new THREE.OrthographicCamera(-500, 500,
+                        500, -500, 1, s);
+map.position.set (0,20,0);
+map.up.set(0,1,0); 
+map.lookAt(0,0,0);
+scene.add(map);
 scene.add(camera);
 scene.add(TrackballCamera);
 
@@ -80,6 +88,55 @@ export function onWindowResize(camera, renderer){
     // TODO for other cameras
   }
 }
+// spotlight
+var spotlight = new THREE.SpotLight( "rgb: 255,255,255",0,0,Math.PI/8,0.5)
+spotlight.visible = false;
+spotlight.castShadow = true;
+spotlight.shadow.mapSize.width = 1024;
+spotlight.shadow.mapSize.height = 1024;
+spotlight.shadow.camera.near = 10;
+spotlight.shadow.camera.far = 300;
+spotlight.shadow.camera.fov = 20;
+spotlight.intensity = 1;
+scene.add(spotlight);
+
+//Light
+var directionalLight = directional(scene, true);
+directionalLight.visible = true;
+
+function directional(scene, castShadow = false, position = new THREE.Vector3(80, 80, 80), 
+                                      shadowSide = 128, shadowMapSize = 1024, shadowNear = 0.1, shadowFar = 500 ) 
+{
+  //let position = (initialPosition !== undefined) ? initialPosition : new THREE.Vector3(1, 1, 1);
+
+  const ambientLight = new THREE.HemisphereLight(
+    'white', // bright sky color
+    'darkslategrey', // dim ground color
+    0.25, // intensity
+  );
+
+  const mainLight = new THREE.DirectionalLight('white', 1.3);
+    mainLight.position.copy(position);
+    mainLight.castShadow = castShadow;
+
+  // Directional ligth's shadow uses an OrthographicCamera to set shadow parameteres
+  // and its left, right, bottom, top, near and far parameters are, respectively,
+  // (-5, 5, -5, 5, 0.5, 500).    
+  const shadow = mainLight.shadow;
+    shadow.mapSize.width  =  shadowMapSize; 
+    shadow.mapSize.height =  shadowMapSize; 
+    shadow.camera.near    =  shadowNear;
+    shadow.camera.far     =  shadowFar; 
+    shadow.camera.left    = -shadowSide/2; 
+    shadow.camera.right   =  shadowSide/2; 
+    shadow.camera.bottom  = -shadowSide/2; 
+    shadow.camera.top     =  shadowSide/2; 
+
+  scene.add(ambientLight);
+  scene.add(mainLight);
+
+  return mainLight;
+}
 
 // To use the keyboard
 var keyboard = new KeyboardState();
@@ -87,12 +144,12 @@ var keyboard = new KeyboardState();
 // Car
 var cybertruck;
 var objectToFollow;
-var massVehicle = 800;
+var massVehicle = 600;
 var friction = 3000;
-var suspensionStiffness = 30.0;
-var suspensionDamping = 3.3;
-var suspensionCompression = 6.3;
-var suspensionRestLength = 0.3;
+var suspensionStiffness = 20.0;
+var suspensionDamping = 8.3;
+var suspensionCompression = 3.3;
+var suspensionRestLength = 0.1;
 var rollInfluence = 0.2;
 var steeringIncrement = .04;
 var steeringClamp = .5;
@@ -178,6 +235,11 @@ function initSpeedway(speedway){
   swInitx = speedway.xInitialBlock;
   swInitz = speedway.zInitialBlock;
   blockSize = speedway.blockSize;
+
+  speedway.blocks.forEach( e => {
+    e.block.castShadow = false;
+    e.fundo.castShadow = false;
+  });
 }
 
 function createObjects() {
@@ -201,10 +263,10 @@ function createObjects() {
   cybertruck.wheelsH[2].scale.set(1.2,1.2,1.2);
   scene.add(cybertruck.wheelsH[3]);
   cybertruck.wheelsH[3].scale.set(1.2,1.2,1.2);
-  //console.log(cybertruck.mesh.quaternion);
   cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
   addPhysicsCar(0, 2, 420);
+  cybertruck.mesh.castShadow = true;
 
   cybertruck.updateNumCorners(swCornersX);
   //addCar(0, 2, 420);
@@ -323,9 +385,9 @@ function addPhysicsCar(x, y, z){
               tuning,
               isFront);
 
-      wheelInfo.set_m_suspensionStiffness(suspensionStiffness);
+      isFront ? wheelInfo.set_m_suspensionStiffness(suspensionStiffness) : wheelInfo.set_m_suspensionStiffness(suspensionStiffness/2);
       wheelInfo.set_m_wheelsDampingRelaxation(suspensionDamping);
-      wheelInfo.set_m_wheelsDampingCompression(suspensionCompression);
+      isFront ? wheelInfo.set_m_wheelsDampingCompression(suspensionCompression) : wheelInfo.set_m_wheelsDampingCompression(suspensionCompression*10);
       wheelInfo.set_m_frictionSlip(friction);
       wheelInfo.set_m_rollInfluence(rollInfluence);
 
@@ -454,9 +516,6 @@ function stopMovement (vehicle){
     // cybertruck.wheelsH[0].rotation.z = vehicleSteering + Math.PI;
     // cybertruck.wheelsH[1].rotation.z = vehicleSteering + Math.PI;
 }
-
-//Light
-initDefaultBasicLight(scene, true);
 
 
 
@@ -661,11 +720,19 @@ function cameraControl()
   changeCamera();
   
   if (cameraFree)
-    trackballControls.update();
+    trackballUpdate()
   else
     cameraFollow();
-}
 
+}
+function trackballUpdate(){
+  trackballControls.update();
+  
+  spotlight.position.set(TrackballCamera.position.x + 30, TrackballCamera.position.y - 3, TrackballCamera.position.z - 10);
+  // spotlight.up.set(0,1,0)
+  // spotlight.lookAt(objectToFollow.position.x + 0, objectToFollow.position.y + 0, objectToFollow.position.z + 0);
+  spotlight.target = cybertruck.wheelsH[1];
+} 
 function changeCamera()
 {
   if ( keyboard.down("space") )
@@ -674,6 +741,25 @@ function changeCamera()
     cameraFree = !cameraFree;
     setupCamera();
   }
+}
+//createTeapot(-20, 2, 420, "rgb:255,0,0" )
+
+function createTeapot(x, y, z, color )
+{
+  var geometry = new TeapotGeometry(0.5);
+  var material = new THREE.MeshPhongMaterial({color, shininess:"200"});
+    material.side = THREE.DoubleSide;
+  var obj = new THREE.Mesh(geometry, material);
+    obj.castShadow = true;
+    obj.position.set(x, y, z);
+    obj.scale.set(5,5,5);
+  scene.add(obj);
+}
+
+function switchLight()
+{
+  spotlight.visible = !spotlight.visible;
+  directionalLight.visible = !directionalLight.visible;
 }
 
 function setupCamera()
@@ -688,7 +774,7 @@ function setupCamera()
       //   block.cubeFundo.visible = true;
       // })
       // plane.visible = true;
-
+      switchLight()
     }
     else 
     {
@@ -708,34 +794,58 @@ function setupCamera()
 
       //plane.visible = false;
 
-      // var pos = new THREE.Vector3,
-      //     quat = new THREE.Vector4,
-      //     i; 
-      // for (i = 0; i < 2; i++) {
-      //   //cybertruck.wheelsH[i].position.copy(pos);
-      //   cybertruck.wheelsH[i].quaternion.copy(quat);
-      //     //cybertruck.wheelsH[i].position.set(pos);
-      //     cybertruck.wheelsH[i].quaternion.set(quat);
-      // } 
+      switchLight()
     
     }
 }
 //var objectToFollow = cybertruck.mesh;
 function cameraFollow()
 {
-  
   var dir = new THREE.Vector3();
   objectToFollow.getWorldDirection(dir);
-  camera.position.set(objectToFollow.position.x + dir.x*3 + 50, 50, objectToFollow.position.z + 50 + dir.z*3);
-  camera.lookAt(objectToFollow.position.x + dir.x*3, 0, objectToFollow.position.z +dir.z*3);
+  camera.position.set(objectToFollow.position.x + dir.x*15 + 80, 80, objectToFollow.position.z + 80 + dir.z*15);
+  camera.lookAt(objectToFollow.position.x + dir.x*15, 0, objectToFollow.position.z +dir.z*15);
+
+  directionalLight.position.set(objectToFollow.position.x + 20, 50, objectToFollow.position.z + 80);
+  directionalLight.target = cybertruck.wheelsH[2];
 }
 
 function cameraRenderer ()
 {
   if (cameraFree)
+  {
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    renderer.setViewport(0, 0, width, height); // Reset viewport    
+    renderer.setScissorTest(false); // Disable scissor to paint the entire window
+    renderer.setClearColor("rgb(80, 70, 170)");    
+    renderer.clear();   // Clean the window
+
     renderer.render(scene, TrackballCamera);
+  }
   else
+  {
+  
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    renderer.setViewport(0, 0, width, height); // Reset viewport    
+    renderer.setScissorTest(false); // Disable scissor to paint the entire window
+    renderer.setClearColor("rgb(80, 70, 170)");    
+    renderer.clear();   // Clean the window
     renderer.render(scene, camera);
+
+    var offset = 30; 
+    renderer.setViewport(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth);  // Set virtual camera viewport  
+    renderer.setScissor(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth); // Set scissor with the same size as the viewport
+    renderer.setScissorTest(true); // Enable scissor to paint only the scissor are (i.e., the small viewport)
+    renderer.setClearColor("rgb(60, 50, 150)");  // Use a darker clear color in the small viewport 
+    renderer.clear(); // Clean the small viewport
+
+    renderer.render(scene, map);
+    console.log(map)
+  }
 }
 
 

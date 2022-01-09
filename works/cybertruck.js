@@ -182,9 +182,11 @@ export class Cybertruck {
 
 
         let bodypartetras = new THREE.Mesh(bodytras,bodyMat);
+		bodypartetras.castShadow = true;
 		this.mesh.add(bodypartetras);
 
 		let body = new THREE.Mesh(this.bodyGeo,bodyMat);
+		body.castShadow = true;
 		this.mesh.add(body);
 
 		// B. Door Handles
@@ -315,7 +317,7 @@ export class Cybertruck {
 		let windowMat = new THREE.MeshLambertMaterial({
 				color: 0x101010,
 				wireframe: this.wireframes,
-				opacity: 0.95,
+				opacity: 0.93,
 				transparent: true
 			}),
 			lightMat = new THREE.MeshBasicMaterial({
@@ -346,6 +348,7 @@ export class Cybertruck {
 		topWindowGeo.computeFaceNormals();
 
 		let topWindow = new THREE.Mesh(topWindowGeo,windowMat);
+		topWindow.castShadow = true;
 		this.mesh.add(topWindow);
 
 		// B. Light
@@ -371,15 +374,15 @@ export class Cybertruck {
 		this.mesh.add(topLight);
 
 		// C. Sliding Door
-		let slidingDoorMat = new THREE.MeshStandardMaterial({
+		let slidingDoorMat = new THREE.MeshPhongMaterial({
 				color: 0x767c7f,
 				wireframe: this.wireframes
 			}),
 			slidingDoorVerticesArr = [
 				[-0.35,0.274,-0.472],
 				[0.35, 0.274,-0.472],
-				[-0.35,0.407,-0.145],
-				[0.35, 0.407,-0.145]
+				[-0.35,0.42,-0.145],
+				[0.35, 0.42,-0.145]
 			],
 			slidingDoorVertices = slidingDoorVerticesArr.map(toVectors),
 			slidingDoorFacesArr = [
@@ -431,6 +434,7 @@ export class Cybertruck {
 		sideWindowsGeo.computeFaceNormals();
 
 		let sideWindows = new THREE.Mesh(sideWindowsGeo,windowMat);
+		sideWindows.castShadow = true;
 		this.mesh.add(sideWindows);
 
 		// IV. Front Lights
@@ -754,6 +758,7 @@ export class Cybertruck {
 		backGeo.computeFaceNormals();
 
 		let back = new THREE.Mesh(backGeo,backMat);
+		back.castShadow = true;
 		this.mesh.add(back);
 
 		// B. Red Lines
