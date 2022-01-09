@@ -1492,8 +1492,8 @@ export class Cybertruck {
 
 	movement(cornersX, cornersZ, initX, initZ, blockSize){
         
-		console.log("Has Passed: " + this.hasPassedRightWay());
-		console.log("Lap: " + this.lap);
+		//console.log("Has Passed: " + this.hasPassedRightWay());
+		//console.log("Lap: " + this.lap);
 		if(this.hasPassedRightWay()){
 		  
 		  if(this.hitCorner(cornersX, cornersZ, blockSize)){
@@ -1502,13 +1502,14 @@ export class Cybertruck {
 			this.cornerCount +=1;
 			this.lapFlag = true;
 		  }else{
-			console.log("cornerCount == cornersX.length: " + (this.cornerCount == cornersX.length) );
-			console.log("lapFlag: " + this.lapFlag);
-			console.log("hitFinish: " + this.hitFinishLine(initX, initZ));
+			//console.log("cornerCount == cornersX.length: " + (this.cornerCount == cornersX.length) );
+			//console.log("lapFlag: " + this.lapFlag);
+			//console.log("hitFinish: " + this.hitFinishLine(initX, initZ));
+			//console.log("intiX: " + initX + " initZ" + initZ );
 			if( (this.cornerCount == cornersX.length) && this.lapFlag && this.hitFinishLine(initX, initZ)){
-			  console.log("Hit finish line");
+			  //console.log("Hit finish line");
 			  this.lap++;
-			  console.log(this.lap);
+			  //console.log(this.lap);
 			  this.updateCornersPassed();
 			  this.cornerCount = 0;
 			  this.lapFlag = false;
@@ -1563,10 +1564,10 @@ export class Cybertruck {
 		  conditionX = (this.mesh.position.x >= -10 && this.mesh.position.x <=10);
 		}else{
 		  if(xInitialBlock > 0){
-			conditionX = (this.mesh.position.x >= xInitialBlock*0.85) && (this.mesh.position.x <= xInitialBlock[this.cornerCount]*1.15);
+			conditionX = (this.mesh.position.x >= xInitialBlock*0.85) && (this.mesh.position.x <= xInitialBlock*1.15);
 		  }else{
-			conditionX = ((this.mesh.position.x <= xInitialBlock[this.cornerCount]*0.85) && (this.mesh.position.x >= xInitialBlock[this.cornerCount]*1.15));
-		  }
+			conditionX = ((this.mesh.position.x <= xInitialBlock*0.85) && (this.mesh.position.x >= xInitialBlock*1.15));
+			}
 		}
 	
 		if((zInitialBlock >= -5) && (zInitialBlock <= 5)){
@@ -1578,6 +1579,9 @@ export class Cybertruck {
 			conditionZ = (this.mesh.position.z <= zInitialBlock*0.85) && (this.mesh.position.z >= zInitialBlock*1.15);
 		  }
 		}
+
+		console.log(conditionX + " " + conditionZ);
+
 	
 		return conditionX && conditionZ;
 	}

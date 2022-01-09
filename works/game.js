@@ -124,7 +124,7 @@ var clock = new THREE.Clock();
 Ammo().then(function() { //Tudo que usa a física tem que estar dentro dessa função
 	initPhysics();
 	createObjects();
-  switchSpeedway(1);	
+  switchSpeedway(3);	
 	render();
 });
 
@@ -181,8 +181,7 @@ function initSpeedway(speedway){
 }
 
 function createObjects() {
-  // Aqui seria a speedway com colisão
-  speedway = new Speedway(21, 2);
+  speedway = new Speedway(13, 3);
   initSpeedway(speedway);
   
   var ground = createBox(new THREE.Vector3(0, -2, 0), ZERO_QUATERNION, 1000, 1, 1000, 0, 2, materialGround, true);
@@ -204,8 +203,8 @@ function createObjects() {
   //console.log(cybertruck.mesh.quaternion);
   cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
-  addPhysicsCar(0, 2, 420);
-
+  addPhysicsCar(-260, 2, 0);
+  //addPhysicsCar(0, 5, 260);
   cybertruck.updateNumCorners(swCornersX);
   //addCar(0, 2, 420);
   
@@ -292,7 +291,8 @@ function addPhysicsCar(x, y, z){
   var transform = new Ammo.btTransform();
   transform.setIdentity();
   transform.setOrigin(new Ammo.btVector3(x, y, z));
-  transform.setRotation(new Ammo.btQuaternion(0,-1,0,1));
+  //transform.setRotation(new Ammo.btQuaternion(0,-1,0,1));
+  transform.setRotation(new Ammo.btQuaternion(0,0,0,-1));
   var motionState = new Ammo.btDefaultMotionState(transform);
   var localInertia = new Ammo.btVector3(0, 0, 0);
   var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .5, cybertruck.height * .2, cybertruck.depth * .5));
@@ -560,7 +560,7 @@ function switchSpeedway(sw){
 
   //
   //add new speedway
-  speedway = new Speedway(21, sw);
+  speedway = new Speedway(13, sw);
   initSpeedway(speedway);
   swCornersX = speedway.cornersX;
   swCornersZ = speedway.cornersZ;;

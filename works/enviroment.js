@@ -139,22 +139,39 @@ export class Ramp{
 export class Speedway{
     constructor(sideSize, type){
         this.blockSize = 40;
-        this.xInitialBlock = 0;
-        this.yInitialBlock = 0.1;
-        this.zInitialBlock = (sideSize*this.blockSize)/2;
-        this.sideSize = sideSize;
-        this.type = type;
-        this.blocks = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock, true, false, false)];
-        this.muroDentro = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock - (this.blockSize/2), false, true, true)];
-        this.muroFora = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock + (this.blockSize/2), false, true, true)];
-        this.xPos = this.xInitialBlock;
-        this.zPos = this.zInitialBlock;
-        this.ramps = [new Ramp((this.xPos - 3*this.blockSize), (this.yInitialBlock-2), this.zPos, this.blockSize)];
+        if(type == 3){
+            this.xInitialBlock = - (sideSize*this.blockSize)/2;
+            this.yInitialBlock = 0.1;
+            this.zInitialBlock = 0;
+            this.sideSize = sideSize;
+            this.type = type;
+            this.blocks = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock, true, false, false)];
+            this.muroDentro = [new Block(this.xInitialBlock - (this.blockSize/2), this.yInitialBlock, this.zInitialBlock, false, true, false)];
+            this.muroFora = [new Block(this.xInitialBlock + (this.blockSize/2), this.yInitialBlock, this.zInitialBlock , false, true, false)];
+            this.xPos = this.xInitialBlock;
+            this.zPos = this.zInitialBlock;
+            this.ramps = [new RampZ(this.xPos, (this.yInitialBlock-2), (this.zPos + 3*this.blockSize), this.blockSize)];
+
+        }else{
+            this.xInitialBlock = 0;
+            this.yInitialBlock = 0.1;
+            this.zInitialBlock = (sideSize*this.blockSize)/2;
+            this.sideSize = sideSize;
+            this.type = type;
+            this.blocks = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock, true, false, false)];
+            this.muroDentro = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock - (this.blockSize/2), false, true, true)];
+            this.muroFora = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock + (this.blockSize/2), false, true, true)];
+            this.xPos = this.xInitialBlock;
+            this.zPos = this.zInitialBlock;
+            this.ramps = [new Ramp((this.xPos - 3*this.blockSize), (this.yInitialBlock-2), this.zPos, this.blockSize)];
+        }
         this.cornersX = [];
         this.cornersZ = [];
         this.piecesCount = 0;
         if(type == 1) this.createTrack1();
         if(type == 2) this.createTrack2();
+        if(type == 3) this.createTrack3();
+        if(type == 4) this.createTrack4();
 
         
     }
@@ -202,7 +219,7 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
         }
-        //this.addRampZ(this.xPos , this.yInitialBlock, this.zPos + (this.sideSize*this.blockSize)/2);
+        this.addRampZ(this.xPos , this.yInitialBlock, this.zPos + (this.sideSize*this.blockSize)/2);
 
         //Fix muro
         this.muroFora.pop();
@@ -365,6 +382,147 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
+    }
+
+    createTrack3() 
+    {
+        var x = 0;
+        var zL = 0;
+        var zR = 0;
+        for(zL= 0; zL<this.sideSize/4; zL++){
+            this.zPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(x=0; x<this.sideSize/4; x++){
+            this.xPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(zL; zL<this.sideSize/2; zL++){
+            this.zPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(x; x<this.sideSize; x++){
+            this.xPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroDentro.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(zR=0; zR<this.sideSize/2; zR++){
+            this.zPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+
+        //console.log("zPos: " + this.zPos + " xPos: "+ this.xPos + " " + this.sideSize*this.blockSize);
+
+        //Fix muro
+        this.muroDentro.pop();
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(zR; zR<this.sideSize; zR++){
+            this.zPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
+
+        for(x=1; x<this.sideSize/2; x++){
+            this.xPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        this.zPos = 0;
+        this.xPos = (this.sideSize*this.blockSize)/2;
+        this.muroFora.pop();
+
+        for(x=1; x<this.sideSize/2; x++){
+            this.xPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroDentro.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
+
+        for(zR = this.sideSize/2+1; zR<this.sideSize; zR++){
+            this.zPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        this.muroFora.pop();
+        this.muroDentro.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(x= x-1; x<this.sideSize; x++){
+            this.xPos -= this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
+        }
+        //Fix muro
+        this.muroFora.pop();
+        this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        this.muroFora.pop();
+
+        //Checkpoint pra completar a volta
+        this.cornersX.push(this.xPos);
+        this.cornersZ.push(this.zPos);
+
+        for(zL=zL+1; zL<this.sideSize; zL++){
+            this.zPos += this.blockSize;
+            this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
+            this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
+        }
+
     }
 }
 
