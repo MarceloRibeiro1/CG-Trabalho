@@ -270,7 +270,7 @@ function createObjects() {
   //addCar(0, 2, 420);
   addPhysicsCar(-260, 2, 0);
   //addPhysicsCar(0, 5, 260);
-  this.cybertruck.mesh.castShadow = true;
+  //this.cybertruck.mesh.castShadow = true;
   
 }
 /*

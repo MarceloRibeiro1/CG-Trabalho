@@ -437,6 +437,7 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
+        this.addRamp(this.xPos - (this.sideSize*this.blockSize)/3, this.yInitialBlock, this.zPos);
 
         //Fix muro
         this.muroDentro.pop();
@@ -446,6 +447,9 @@ export class Speedway{
         //Checkpoint pra completar a volta
         this.cornersX.push(this.xPos);
         this.cornersZ.push(this.zPos);
+
+        
+        this.addRampZ(this.xPos, this.yInitialBlock, this.zPos - (this.sideSize*this.blockSize)/4);
 
         for(zR=0; zR<this.sideSize/2; zR++){
             this.zPos -= this.blockSize;
@@ -486,6 +490,7 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
+
         //Fix muro
         this.muroDentro.pop();
         this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
@@ -508,6 +513,7 @@ export class Speedway{
             this.addBlock(this.xPos, this.yInitialBlock, this.zPos, false);
             this.addMuroZ(this.xPos, this.yInitialBlock, this.zPos);
         }
+        this.addRamp(this.xPos + (this.sideSize*this.blockSize)/3, this.yInitialBlock, this.zPos);
         //Fix muro
         this.muroFora.pop();
         this.addMuroX(this.xPos, this.yInitialBlock, this.zPos);
