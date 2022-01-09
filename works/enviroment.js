@@ -914,7 +914,7 @@ export class gameInfo{
         this.infoBox.style.position = "fixed";
         this.infoBox.style.bottom = "0";
         this.infoBox.style.left = "0";
-        this.box.style.backgroundColor = "rgba(0,0,0,2)";
+        this.infoBox.style.backgroundColor = "rgba(0,0,0,2)";
         this.infoBox.style.color = "white";
         this.infoBox.style.fontFamily = "sans-serif";
         this.infoBox.style.userSelect = "none";
