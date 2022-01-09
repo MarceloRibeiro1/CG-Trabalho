@@ -58,6 +58,15 @@ var TrackballCamera = new THREE.PerspectiveCamera(38, window.innerWidth / window
   TrackballCamera.position.set(30,5,50);
   TrackballCamera.up.set( 0, 1, 0 );
 
+var vcWidth = 200; 
+var vcHeidth = 200; 
+var s = 75; // Estimated size for orthographic projection
+var map = new THREE.OrthographicCamera(-500, 500,
+                        500, -500, 1, s);
+map.position.set (0,20,0);
+map.up.set(0,1,0); 
+map.lookAt(0,0,0);
+scene.add(map);
 scene.add(camera);
 scene.add(TrackballCamera);
 
@@ -80,21 +89,54 @@ export function onWindowResize(camera, renderer){
   }
 }
 // spotlight
-var spotlight = new THREE.SpotLight( "rgb: 255,255,255",0,0,Math.PI/4,0.5)
+var spotlight = new THREE.SpotLight( "rgb: 255,255,255",0,0,Math.PI/8,0.5)
 spotlight.visible = false;
 spotlight.castShadow = true;
 spotlight.shadow.mapSize.width = 1024;
 spotlight.shadow.mapSize.height = 1024;
 spotlight.shadow.camera.near = 10;
-spotlight.shadow.camera.far = 800;
+spotlight.shadow.camera.far = 300;
 spotlight.shadow.camera.fov = 20;
 spotlight.intensity = 1;
 scene.add(spotlight);
 
 //Light
-var directionalLight = initDefaultBasicLight(scene, true);
+var directionalLight = directional(scene, true);
 directionalLight.visible = true;
 
+function directional(scene, castShadow = false, position = new THREE.Vector3(80, 80, 80), 
+                                      shadowSide = 128, shadowMapSize = 1024, shadowNear = 0.1, shadowFar = 500 ) 
+{
+  //let position = (initialPosition !== undefined) ? initialPosition : new THREE.Vector3(1, 1, 1);
+
+  const ambientLight = new THREE.HemisphereLight(
+    'white', // bright sky color
+    'darkslategrey', // dim ground color
+    0.25, // intensity
+  );
+
+  const mainLight = new THREE.DirectionalLight('white', 1.3);
+    mainLight.position.copy(position);
+    mainLight.castShadow = castShadow;
+
+  // Directional ligth's shadow uses an OrthographicCamera to set shadow parameteres
+  // and its left, right, bottom, top, near and far parameters are, respectively,
+  // (-5, 5, -5, 5, 0.5, 500).    
+  const shadow = mainLight.shadow;
+    shadow.mapSize.width  =  shadowMapSize; 
+    shadow.mapSize.height =  shadowMapSize; 
+    shadow.camera.near    =  shadowNear;
+    shadow.camera.far     =  shadowFar; 
+    shadow.camera.left    = -shadowSide/2; 
+    shadow.camera.right   =  shadowSide/2; 
+    shadow.camera.bottom  = -shadowSide/2; 
+    shadow.camera.top     =  shadowSide/2; 
+
+  scene.add(ambientLight);
+  scene.add(mainLight);
+
+  return mainLight;
+}
 
 // To use the keyboard
 var keyboard = new KeyboardState();
@@ -193,6 +235,11 @@ function initSpeedway(speedway){
   swInitx = speedway.xInitialBlock;
   swInitz = speedway.zInitialBlock;
   blockSize = speedway.blockSize;
+
+  speedway.blocks.forEach( e => {
+    e.block.castShadow = false;
+    e.fundo.castShadow = false;
+  });
 }
 
 function createObjects() {
@@ -402,14 +449,14 @@ function addPhysicsCar(x, y, z){
 
 function stopMovement (vehicle){
 
-    // if (acceleration) {
-    //   if (cybertruck.speed < 80)
-    //   cybertruck.speed++;
-    // }
-    // if (braking) {
-    //   if (cybertruck.speed > -80)
-    //   cybertruck.speed--;
-    // }
+    if (acceleration) {
+      if (cybertruck.speed < 80)
+      cybertruck.speed++;
+    }
+    if (braking) {
+      if (cybertruck.speed > -80)
+      cybertruck.speed--;
+    }
     if (left) {
       if (vehicleSteering < steeringClamp)
         vehicleSteering += steeringIncrement;
@@ -431,16 +478,15 @@ function stopMovement (vehicle){
         }
       }
     }
-    // if (!acceleration && !braking){
-    //   if (cybertruck.speed > 5)
-    //     cybertruck.speed--;
-    //   else {
-    //     if (cybertruck.speed < -5)  cybertruck.speed++;
-    //     else cybertruck.speed = 0
-    //   }
-    // }
+    if (!acceleration && !braking){
+      if (cybertruck.speed > 5)
+        cybertruck.speed--;
+      else {
+        if (cybertruck.speed < -5)  cybertruck.speed++;
+        else cybertruck.speed = 0
+      }
+    }
 
-    cybertruck.speed = 60;
     vehicle.setSteeringValue(vehicleSteering, 0);
     vehicle.setSteeringValue(vehicleSteering, 1);
   
@@ -677,11 +723,12 @@ function cameraControl()
     trackballUpdate()
   else
     cameraFollow();
+
 }
 function trackballUpdate(){
   trackballControls.update();
   
-  spotlight.position.set(TrackballCamera.position.x + 10, TrackballCamera.position.y + 10, TrackballCamera.position.z + 10);
+  spotlight.position.set(TrackballCamera.position.x + 30, TrackballCamera.position.y - 3, TrackballCamera.position.z - 10);
   // spotlight.up.set(0,1,0)
   // spotlight.lookAt(objectToFollow.position.x + 0, objectToFollow.position.y + 0, objectToFollow.position.z + 0);
   spotlight.target = cybertruck.wheelsH[1];
@@ -695,7 +742,7 @@ function changeCamera()
     setupCamera();
   }
 }
-createTeapot(-20, 2, 420, "rgb:255,0,0" )
+//createTeapot(-20, 2, 420, "rgb:255,0,0" )
 
 function createTeapot(x, y, z, color )
 {
@@ -754,19 +801,51 @@ function setupCamera()
 //var objectToFollow = cybertruck.mesh;
 function cameraFollow()
 {
-  
   var dir = new THREE.Vector3();
   objectToFollow.getWorldDirection(dir);
   camera.position.set(objectToFollow.position.x + dir.x*15 + 80, 80, objectToFollow.position.z + 80 + dir.z*15);
   camera.lookAt(objectToFollow.position.x + dir.x*15, 0, objectToFollow.position.z +dir.z*15);
+
+  directionalLight.position.set(objectToFollow.position.x + 20, 50, objectToFollow.position.z + 80);
+  directionalLight.target = cybertruck.wheelsH[2];
 }
 
 function cameraRenderer ()
 {
   if (cameraFree)
+  {
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    renderer.setViewport(0, 0, width, height); // Reset viewport    
+    renderer.setScissorTest(false); // Disable scissor to paint the entire window
+    renderer.setClearColor("rgb(80, 70, 170)");    
+    renderer.clear();   // Clean the window
+
     renderer.render(scene, TrackballCamera);
+  }
   else
+  {
+  
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    renderer.setViewport(0, 0, width, height); // Reset viewport    
+    renderer.setScissorTest(false); // Disable scissor to paint the entire window
+    renderer.setClearColor("rgb(80, 70, 170)");    
+    renderer.clear();   // Clean the window
     renderer.render(scene, camera);
+
+    var offset = 30; 
+    renderer.setViewport(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth);  // Set virtual camera viewport  
+    renderer.setScissor(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth); // Set scissor with the same size as the viewport
+    renderer.setScissorTest(true); // Enable scissor to paint only the scissor are (i.e., the small viewport)
+    renderer.setClearColor("rgb(60, 50, 150)");  // Use a darker clear color in the small viewport 
+    renderer.clear(); // Clean the small viewport
+
+    renderer.render(scene, map);
+    console.log(map)
+  }
 }
 
 

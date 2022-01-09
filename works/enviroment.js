@@ -106,14 +106,14 @@ export class Ramp{
         this.ramp.add(ramp2);	
     }
 
-    createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = false) {
+    createBox(pos, quat, w, l, h, friction = 1, material, receiveShadow = true) {
         if(!this.transformAux)
             this.transformAux = new Ammo.btTransform();
         var shape = new THREE.BoxGeometry(w, l, h, 1, 1, 1);
         var geometry = new Ammo.btBoxShape(new Ammo.btVector3(w * 0.5, l * 0.5, h * 0.5));
     
         var mesh = new THREE.Mesh(shape, material);
-            mesh.castShadow = true;
+            mesh.castShadow = false;
             mesh.receiveShadow = receiveShadow;
         mesh.position.copy(pos);
         mesh.quaternion.copy(quat);

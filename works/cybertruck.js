@@ -182,9 +182,11 @@ export class Cybertruck {
 
 
         let bodypartetras = new THREE.Mesh(bodytras,bodyMat);
+		bodypartetras.castShadow = true;
 		this.mesh.add(bodypartetras);
 
 		let body = new THREE.Mesh(this.bodyGeo,bodyMat);
+		body.castShadow = true;
 		this.mesh.add(body);
 
 		// B. Door Handles
@@ -346,6 +348,7 @@ export class Cybertruck {
 		topWindowGeo.computeFaceNormals();
 
 		let topWindow = new THREE.Mesh(topWindowGeo,windowMat);
+		topWindow.castShadow = true;
 		this.mesh.add(topWindow);
 
 		// B. Light
@@ -431,6 +434,7 @@ export class Cybertruck {
 		sideWindowsGeo.computeFaceNormals();
 
 		let sideWindows = new THREE.Mesh(sideWindowsGeo,windowMat);
+		sideWindows.castShadow = true;
 		this.mesh.add(sideWindows);
 
 		// IV. Front Lights
@@ -754,6 +758,7 @@ export class Cybertruck {
 		backGeo.computeFaceNormals();
 
 		let back = new THREE.Mesh(backGeo,backMat);
+		back.castShadow = true;
 		this.mesh.add(back);
 
 		// B. Red Lines
