@@ -11,7 +11,6 @@ import {initRenderer,
       degreesToRadians} from "../libs/util/util.js";
 
 import {LapInfo, Stopwatch, Speedway, gameInfo} from './enviroment.js';
-import { Car} from './car.js';
     
 
 
