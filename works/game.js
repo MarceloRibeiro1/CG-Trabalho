@@ -6,8 +6,7 @@ import {TeapotGeometry} from '../build/jsm/geometries/TeapotGeometry.js';
 import {TrackballControls} from '../build/jsm/controls/TrackballControls.js';
 import KeyboardState from '../libs/util/KeyboardState.js';
 import {initRenderer,
-        initDefaultBasicLight,
-        createGroundPlaneWired,
+      InfoBox,
       degreesToRadians} from "../libs/util/util.js";
 
 import {LapInfo, Stopwatch, Speedway, gameInfo} from './enviroment.js';
@@ -579,8 +578,9 @@ function keyboardUpdate2() {
 
     if(keyboard.pressed("W")){
       var tm;
-      tm = vehicle.getChassisWorldTransform();
-      tm.setRotation(new Ammo.btQuaternion(0, 0,0, 1));
+      tm = vehicle.getChassisWorldTransform();      
+      tm.setRotation(new Ammo.btQuaternion(0, 1, 0, 0));
+      
     }
 
     if(keyboard.pressed("S")){
@@ -673,6 +673,21 @@ function switchSpeedway(sw){
   lapTimes = [];
   firstLapFlag = secLapFlag = thirdLapFlag = fourthLapFlag = true;
   stopwatchInfo.changeBestLap("Best Lap: 00:00")
+}
+
+showInformation();
+function showInformation()
+{
+  var controls = new InfoBox();
+  // Use this to show information onscreen
+    controls.add("Controles:");
+    controls.addParagraph();
+    controls.add("Setas Direcionais para mover");
+    controls.add("1,2,3,4 para mudar de pista");
+    controls.add("ESPAÇO para modo inspeção");
+    controls.add("W,A,S,D para desvirar o carro");
+    controls.show();
+    controls.infoBox.style.backgroundColor = "rgba(0,0,0,0.2)";
 }
 
 
