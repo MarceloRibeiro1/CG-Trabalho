@@ -343,6 +343,7 @@ function addPhysicsCar(x, y, z){
   var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .5 * carResize, cybertruck.height * .2 * carResize, cybertruck.depth * .5 * carResize));
   carChassi.calculateLocalInertia(massVehicle, localInertia);
   var bodyCar = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(massVehicle, motionState, carChassi, localInertia));
+  bodyCar.setActivationState(4);
   physicsWorld.addRigidBody(bodyCar);
   
 
