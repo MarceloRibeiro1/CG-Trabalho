@@ -576,10 +576,36 @@ function keyboardUpdate2() {
     else left = false;
     if ( keyboard.pressed("right")) right = true;
     else right = false
+
+    if(keyboard.pressed("W")){
+      var tm;
+      tm = vehicle.getChassisWorldTransform();
+      tm.setRotation(new Ammo.btQuaternion(0, 0,0, 1));
+    }
+
+    if(keyboard.pressed("S")){
+      var tm;
+      tm = vehicle.getChassisWorldTransform();
+      tm.setRotation(new Ammo.btQuaternion(0, 0,0, -1));
+    }
+
+    if(keyboard.pressed("A")){
+      var tm;
+      tm = vehicle.getChassisWorldTransform();
+      tm.setRotation(new Ammo.btQuaternion(0, -1,0, 1));
+    }
+
+    if(keyboard.pressed("D")){
+      var tm;
+      tm = vehicle.getChassisWorldTransform();
+      tm.setRotation(new Ammo.btQuaternion(0, 1,0, 1));
+    }
+
   }else{
     acceleration = false;
     breaking = true;
   }
+
   if(keyboard.pressed("1")) switchSpeedway(1);
   if(keyboard.pressed("2")) switchSpeedway(2);
   if(keyboard.pressed("3")) switchSpeedway(3);
@@ -626,40 +652,15 @@ function switchSpeedway(sw){
   
   var tm;
   tm = vehicle.getChassisWorldTransform();
-
-  var w1 = vehicle.getWheelTransformWS(1);
-  var w2 = vehicle.getWheelTransformWS(2);
-  var w3 = vehicle.getWheelTransformWS(3);
-  var w4 = vehicle.getWheelTransformWS(4);
   
 
   if(sw == 3){
     tm.setOrigin(new Ammo.btVector3(-300,3,0));
     tm.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
-    /*
-    w1.setOrigin(new Ammo.btVector3(-300,3,0));
-    w1.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
-    w2.setOrigin(new Ammo.btVector3(-300,3,0));
-    w2.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
-    w3.setOrigin(new Ammo.btVector3(-300,3,0));
-    w3.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
-    w4.setOrigin(new Ammo.btVector3(-300,3,0));
-    w4.setRotation(new Ammo.btQuaternion(0, 0,0,-1));
-    */
     
   }else{
     tm.setOrigin(new Ammo.btVector3(0,3,300));
     tm.setRotation(new Ammo.btQuaternion(0,-1,0,1));
-    /*
-    w1.setOrigin(new Ammo.btVector3(0,3,300));
-    w1.setRotation(new Ammo.btQuaternion(0,-1,0,1));
-    w2.setOrigin(new Ammo.btVector3(0,3,300));
-    w2.setRotation(new Ammo.btQuaternion(0,-1,0,1));
-    w3.setOrigin(new Ammo.btVector3(0,3,300));
-    w3.setRotation(new Ammo.btQuaternion(0,-1,0,1));
-    w4.setOrigin(new Ammo.btVector3(0,3,300));
-    w4.setRotation(new Ammo.btQuaternion(0,-1,0,1));
-    */
     
   }
   
