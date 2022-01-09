@@ -151,8 +151,8 @@ var suspensionDamping = 8.3;
 var suspensionCompression = 3.3;
 var suspensionRestLength = 0.1;
 var rollInfluence = 0.2;
-var steeringIncrement = .04;
-var steeringClamp = .5;
+var steeringIncrement = .02;
+var steeringClamp = .3;
 var maxEngineForce = 3000;
 var maxBreakingForce = 100;
 var speed = 0;
@@ -164,6 +164,7 @@ var left = false;
 var engineForce = 0;
 var vehicleSteering = 0;
 var breakingForce = 0;
+var carResize = 0.6;
 
 
 
@@ -255,14 +256,15 @@ function createObjects() {
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
   cybertruck = new Cybertruck(licensePlate);
   scene.add(cybertruck.mesh);
+    cybertruck.mesh.scale.set(carResize,carResize,carResize);
   scene.add(cybertruck.wheelsH[0]);
-  cybertruck.wheelsH[0].scale.set(1.2,1.2,1.2);
+    cybertruck.wheelsH[0].scale.set(1.2 * carResize,1.2 * carResize,1.2 * carResize);
   scene.add(cybertruck.wheelsH[1]);
-  cybertruck.wheelsH[1].scale.set(1.2,1.2,1.2);
+    cybertruck.wheelsH[1].scale.set(1.2 * carResize,1.2 * carResize,1.2 * carResize);
   scene.add(cybertruck.wheelsH[2]);
-  cybertruck.wheelsH[2].scale.set(1.2,1.2,1.2);
+    cybertruck.wheelsH[2].scale.set(1.2 * carResize,1.2 * carResize,1.2 * carResize);
   scene.add(cybertruck.wheelsH[3]);
-  cybertruck.wheelsH[3].scale.set(1.2,1.2,1.2);
+    cybertruck.wheelsH[3].scale.set(1.2 * carResize,1.2 * carResize,1.2 * carResize);
   cybertruck.mesh.quaternion.copy(quat)
   objectToFollow = cybertruck.mesh;
   addPhysicsCar(0, 2, 420);
@@ -357,7 +359,7 @@ function addPhysicsCar(x, y, z){
   transform.setRotation(new Ammo.btQuaternion(0,-1,0,1));
   var motionState = new Ammo.btDefaultMotionState(transform);
   var localInertia = new Ammo.btVector3(0, 0, 0);
-  var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .5, cybertruck.height * .2, cybertruck.depth * .5));
+  var carChassi = new Ammo.btBoxShape(new Ammo.btVector3(cybertruck.width * .5 * carResize, cybertruck.height * .2 * carResize, cybertruck.depth * .5 * carResize));
   carChassi.calculateLocalInertia(massVehicle, localInertia);
   var bodyCar = new Ammo.btRigidBody(new Ammo.btRigidBodyConstructionInfo(massVehicle, motionState, carChassi, localInertia));
   physicsWorld.addRigidBody(bodyCar);
@@ -393,10 +395,10 @@ function addPhysicsCar(x, y, z){
 
   }
 
-  addWheel(true, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*0.3), cybertruck.height * 0.23*1.2,wheelAxleCS);
-  addWheel(true, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*0.3), cybertruck.height * 0.23*1.2,wheelAxleCS);
-  addWheel(false, new Ammo.btVector3(cybertruck.width*0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), cybertruck.height * 0.23*1.2,wheelAxleCS);
-  addWheel(false, new Ammo.btVector3(cybertruck.width*-0.58,cybertruck.height*-0.16,cybertruck.depth*-0.3), cybertruck.height * 0.23*1.2,wheelAxleCS);
+  addWheel(true, new Ammo.btVector3(cybertruck.width*0.58 * carResize,cybertruck.height*-0.16 * carResize,cybertruck.depth*0.3 * carResize), cybertruck.height * 0.23*1.2 * carResize,wheelAxleCS);
+  addWheel(true, new Ammo.btVector3(cybertruck.width*-0.58 * carResize,cybertruck.height*-0.16 * carResize,cybertruck.depth*0.3 * carResize), cybertruck.height * 0.23*1.2 * carResize,wheelAxleCS);
+  addWheel(false, new Ammo.btVector3(cybertruck.width*0.58 * carResize,cybertruck.height*-0.16 * carResize,cybertruck.depth*-0.3 * carResize), cybertruck.height * 0.23*1.2 * carResize,wheelAxleCS);
+  addWheel(false, new Ammo.btVector3(cybertruck.width*-0.58 * carResize,cybertruck.height*-0.16 * carResize,cybertruck.depth*-0.3 * carResize), cybertruck.height * 0.23*1.2 * carResize,wheelAxleCS);
 
   var speedometer;
   speedometer = document.getElementById( 'speedometer' );
@@ -741,19 +743,6 @@ function changeCamera()
     cameraFree = !cameraFree;
     setupCamera();
   }
-}
-//createTeapot(-20, 2, 420, "rgb:255,0,0" )
-
-function createTeapot(x, y, z, color )
-{
-  var geometry = new TeapotGeometry(0.5);
-  var material = new THREE.MeshPhongMaterial({color, shininess:"200"});
-    material.side = THREE.DoubleSide;
-  var obj = new THREE.Mesh(geometry, material);
-    obj.castShadow = true;
-    obj.position.set(x, y, z);
-    obj.scale.set(5,5,5);
-  scene.add(obj);
 }
 
 function switchLight()
