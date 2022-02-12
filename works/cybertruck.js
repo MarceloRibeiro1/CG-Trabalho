@@ -3,7 +3,7 @@ import * as THREE from '../../build/three.module.js';
 import {ConvexGeometry} from '../build/jsm/geometries/ConvexGeometry.js';
 
 export class Cybertruck {
-	constructor(licensePlateImg) {
+	constructor(licensePlateImg,glassImg,carbonFiberImg,wheelImg) {
 		this.speed = 0;
 		this.wireframes = false;
 		this.width = 8;
@@ -1305,6 +1305,18 @@ export class Cybertruck {
 				color: 0x1c1c1c,
 				wireframe: this.wireframes
 			});
+		wheelMat.map = wheelImg;
+
+		var minFilter = THREE.LinearFilter;
+		var magFilter = THREE.LinearFilter;
+		var mode = THREE.EquirectangularReflectionMapping
+
+		wheelMat.map.repeat.set(3,2);
+		wheelMat.map.wrapS = THREE.RepeatWrapping;;
+		wheelMat.map.wrapT = THREE.RepeatWrapping;;
+		wheelMat.map.minFilter = minFilter;
+		wheelMat.map.magFilter = magFilter;
+		wheelMat.map.mapping = mode;
 
 		this.wheels = [
 			new THREE.Mesh(wheelGeo,wheelMat)

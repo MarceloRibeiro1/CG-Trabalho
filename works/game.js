@@ -12,11 +12,13 @@ import {initRenderer,
 import {LapInfo, Stopwatch, Speedway, gameInfo} from './enviroment.js';
     
 
+var ground;
 
 var stats = new Stats();          // To show FPS information
 var scene = new THREE.Scene();    // Create main scene
 var renderer = initRenderer();    // View function in util/utils
 renderer.setClearColor("rgb(30, 30, 40)");
+var textureLoader = new THREE.TextureLoader();
 
 //Stopwatch flags
 var startStopwatchFlag = true; // Flag que inicia o cronômetro quando seta para cima é apertado no inicio do jogo
@@ -92,15 +94,25 @@ spotlight.visible = false;
 spotlight.castShadow = true;
 spotlight.shadow.mapSize.width = 1024;
 spotlight.shadow.mapSize.height = 1024;
-spotlight.shadow.camera.near = 10;
-spotlight.shadow.camera.far = 300;
+spotlight.shadow.camera.near = 20;
+spotlight.shadow.camera.far = 200;
 spotlight.shadow.camera.fov = 20;
 spotlight.intensity = 1;
 scene.add(spotlight);
 
 //Light
+//renderer.shadowMap.type = THREE.BasicShadowMap;
 var directionalLight = directional(scene, true);
 directionalLight.visible = true;
+directionalLight.shadow.mapSize.width = 1024;
+directionalLight.shadow.mapSize.height = 1024;
+directionalLight.shadow.radius = 0;
+directionalLight.shadow.camera.near = 50;
+directionalLight.shadow.camera.far = 200;
+directionalLight.shadow.camera.left = -230;
+directionalLight.shadow.camera.right = 120;
+directionalLight.shadow.camera.top = 180;
+directionalLight.shadow.camera.bottom = -120;
 
 function directional(scene, castShadow = false, position = new THREE.Vector3(80, 80, 80), 
                                       shadowSide = 128, shadowMapSize = 1024, shadowNear = 0.1, shadowFar = 500 ) 
@@ -246,13 +258,15 @@ function createObjects() {
   speedway = new Speedway(15, 1);
   initSpeedway(speedway);
   
-  var ground = createBox(new THREE.Vector3(0, -2, 0), ZERO_QUATERNION, 1000, 1, 1000, 0, 2, materialGround, true);
+  ground = createBox(new THREE.Vector3(0, -2, 0), ZERO_QUATERNION, 1000, 1, 1000, 0, 2, materialGround, true);
   setGroundTexture(ground);
   ground.visible = true
 
-  var textureLoader = new THREE.TextureLoader();
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
-  cybertruck = new Cybertruck(licensePlate);
+  let glass = textureLoader.load('./assets/glass.jpg')
+  let carbonFiber = textureLoader.load('./assets/carbonFiber.jpg')
+  let wheel = textureLoader.load('./assets/wheel.jpg')
+  cybertruck = new Cybertruck(licensePlate,glass,carbonFiber,wheel);
   scene.add(cybertruck.mesh);
     cybertruck.mesh.scale.set(carResize,carResize,carResize);
   scene.add(cybertruck.wheelsH[0]);
@@ -275,7 +289,7 @@ function createObjects() {
 function setGroundTexture(mesh)
 {
 	var textureLoader = new THREE.TextureLoader();
-	textureLoader.load( "../assets/textures/grid.png", function ( texture ) {
+	textureLoader.load( "./assets/grass.jpg", function ( texture ) {
 		texture.wrapS = THREE.RepeatWrapping;
 		texture.wrapT = THREE.RepeatWrapping;
 		texture.repeat.set( 100, 100 );
@@ -411,6 +425,8 @@ function addPhysicsCar(x, y, z){
         vehicle.applyEngineForce(engineForce, 2);
         vehicle.applyEngineForce(engineForce, 3);
       
+        vehicle.setBrake(0, 0);
+        vehicle.setBrake(0, 1);
         vehicle.setBrake(breakingForce, 2);
         vehicle.setBrake(breakingForce, 3);
       
@@ -724,7 +740,7 @@ function cameraControl()
 function trackballUpdate(){
   trackballControls.update();
   
-  spotlight.position.set(TrackballCamera.position.x + 30, TrackballCamera.position.y - 3, TrackballCamera.position.z - 10);
+  spotlight.position.set(TrackballCamera.position.x, TrackballCamera.position.y, TrackballCamera.position.z);
   // spotlight.up.set(0,1,0)
   // spotlight.lookAt(objectToFollow.position.x + 0, objectToFollow.position.y + 0, objectToFollow.position.z + 0);
   spotlight.target = cybertruck.wheelsH[1];
@@ -753,11 +769,20 @@ function setupCamera()
     {
       // Quando desativado o trackball
       // Ativar outros objetos a serem visíveis
-      // speedway.blocks.forEach(function(block){
-      //   block.cube.visible = true;
-      //   block.cubeFundo.visible = true;
-      // })
-      // plane.visible = true;
+      speedway.blocks.forEach(function(block){
+        block.cube.visible = true;
+        block.cubeFundo.visible = true;
+      })
+      speedway.ramps.forEach(function(ramps){
+        ramps.ramp.visible = true;
+      })
+      speedway.muroDentro.forEach(function(block){
+        block.cube.visible = true;
+      })
+      speedway.muroFora.forEach(function(block){
+        block.cube.visible = true;
+      })
+      ground.visible = true;
       switchLight()
 
       physicsWorld.setGravity( new Ammo.btVector3( 0, -15.82, 0 ) )
@@ -773,12 +798,21 @@ function setupCamera()
       TrackballCamera.lookAt(objectToFollow.position);
       
       // Desativar visibilidade de outros objetos
-      // speedway.blocks.forEach(function(block){
-      //   block.cube.visible = false;
-      //   block.cubeFundo.visible = false;
-      // })
+       speedway.blocks.forEach(function(block){
+        block.cube.visible = false;
+        block.cubeFundo.visible = false;
+      })
+      speedway.ramps.forEach(function(ramps){
+        ramps.ramp.visible = false;
+      })
+      speedway.muroDentro.forEach(function(block){
+        block.cube.visible = false;
+      })
+      speedway.muroFora.forEach(function(block){
+        block.cube.visible = false;
+      })
 
-      //plane.visible = false;
+      ground.visible = false;
 
       switchLight()
 
@@ -908,6 +942,18 @@ function gameOverInf(){
   }
   gameOverInfo.show();
 }
+
+
+scene.background = new THREE.CubeTextureLoader()
+	.setPath( './assets/' )
+	.load( [
+    'sh_ft.png',
+    'sh_bk.png',
+    'sh_up.png',
+    'sh_dn.png',
+    'sh_rt.png',
+    'sh_lf.png',
+]);
 
 //render();
 function render()
