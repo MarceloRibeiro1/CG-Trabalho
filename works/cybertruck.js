@@ -3,7 +3,7 @@ import * as THREE from '../../build/three.module.js';
 import {ConvexGeometry} from '../build/jsm/geometries/ConvexGeometry.js';
 
 export class Cybertruck {
-	constructor(licensePlateImg,glassImg,carbonFiberImg,wheelImg) {
+	constructor(licensePlateImg,glassImg,wheel2Img,wheelImg) {
 		this.speed = 0;
 		this.wireframes = false;
 		this.width = 8;
@@ -315,14 +315,15 @@ export class Cybertruck {
 		// II. Top Parts
 		// A. Window
 		let windowMat = new THREE.MeshLambertMaterial({
-				color: 0x101010,
+				//color: 0x101010,
 				wireframe: this.wireframes,
 				opacity: 0.93,
-				transparent: true
+				transparent: true,
+				map: glassImg
 			}),
 			lightMat = new THREE.MeshBasicMaterial({
 				color: 0xffffff,
-				wireframe: this.wireframes
+				wireframe: this.wireframes,
 			}),
 			topWindowVerticesArr = [
 				[-0.371, 0.415,-0.13],
@@ -376,7 +377,8 @@ export class Cybertruck {
 		// C. Sliding Door
 		let slidingDoorMat = new THREE.MeshPhongMaterial({
 				color: 0x767c7f,
-				wireframe: this.wireframes
+				wireframe: this.wireframes,
+				map: glassImg
 			}),
 			slidingDoorVerticesArr = [
 				[-0.35,0.274,-0.472],
@@ -1303,7 +1305,7 @@ export class Cybertruck {
 		let wheelGeo = new THREE.CylinderBufferGeometry(H*0.23,H*0.23,W*0.14,32),
 			wheelMat = new THREE.MeshLambertMaterial({
 				color: 0x1c1c1c,
-				wireframe: this.wireframes
+				wireframe: this.wireframes,
 			});
 		wheelMat.map = wheelImg;
 
@@ -1327,12 +1329,18 @@ export class Cybertruck {
 		wheelHub.position.y = W*0.075;
 		this.wheels[0].add(wheelHub);
 
-		let hubBaseGeo = new THREE.CylinderBufferGeometry(H*0.16,H*0.17,W*0.01,7),
+		let hubBaseGeo = new THREE.CylinderBufferGeometry(H*0.16,H*0.23,W*0.01,32),
+			hubBaseMate = new THREE.MeshStandardMaterial({
+				//color: 0x1a1a1a,
+				color: 'rgb: 255,255,255',
+				wireframe: this.wireframes,
+				map: wheel2Img
+			}),
 			hubBaseMat = new THREE.MeshStandardMaterial({
 				color: 0x1a1a1a,
-				wireframe: this.wireframes
+				wireframe: this.wireframes,
 			}),
-			hubBase = new THREE.Mesh(hubBaseGeo,hubBaseMat);
+			hubBase = new THREE.Mesh(hubBaseGeo,hubBaseMate);
 		wheelHub.add(hubBase);
 
 		let hubCenterGeo = new THREE.TorusBufferGeometry(H*0.03,H*0.03,4,7),

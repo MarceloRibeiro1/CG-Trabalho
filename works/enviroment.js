@@ -578,7 +578,11 @@ export class Speedway{
         for(zR = this.sideSize/2+1; zR<this.sideSize; zR++){
             this.zPos -= this.blockSize;
             var trackImg = trackImgZ;
-            if( zR == 9 ) {
+            console.log(zR)
+            if( zR == 13.5 ) {
+                trackImg = textureLoader.load('./assets/intercessao.png');
+            }
+            if( zR == 14.5 ) {
                 trackImg = textureLoader.load('./assets/intercessao2.png');
                 trackImg.center = new Vector2(0.5,0.5);
                 trackImg.rotation = Math.PI/2;

@@ -271,9 +271,9 @@ function createObjects() {
 
   let licensePlate = textureLoader.load("https://i.ibb.co/R9tkkV0/license-plate.png")
   let glass = textureLoader.load('./assets/glass.jpg')
-  let carbonFiber = textureLoader.load('./assets/carbonFiber.jpg')
+  let wheel2 = textureLoader.load('./assets/Bridgestone Potenza RE 050A Pole Position.jpg')
   let wheel = textureLoader.load('./assets/wheel.jpg')
-  cybertruck = new Cybertruck(licensePlate,glass,carbonFiber,wheel);
+  cybertruck = new Cybertruck(licensePlate,glass,wheel2,wheel);
   scene.add(cybertruck.mesh);
     cybertruck.mesh.scale.set(carResize,carResize,carResize);
   scene.add(cybertruck.wheelsH[0]);
@@ -753,7 +753,7 @@ function trackballUpdate(){
   spotlight.position.set(TrackballCamera.position.x, TrackballCamera.position.y, TrackballCamera.position.z);
   // spotlight.up.set(0,1,0)
   // spotlight.lookAt(objectToFollow.position.x + 0, objectToFollow.position.y + 0, objectToFollow.position.z + 0);
-  spotlight.target = cybertruck.wheelsH[1];
+  spotlight.target = cybertruck.mesh;
 } 
 function changeCamera()
 {
