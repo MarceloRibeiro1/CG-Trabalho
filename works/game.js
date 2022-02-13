@@ -48,6 +48,12 @@ var swInitx;
 var swInitz;
 var blockSize;
 
+//ThirdPerson Camera
+var thirdPCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000); //Camera principal
+thirdPCamera.lookAt(0, 5, 300);
+thirdPCamera.position.set(0,80,80);
+thirdPCamera.up.set( 0, 1, 0);
+thirdPCamera.position.set(30, 5, 300);
 
 var camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 1000); //Camera principal
   camera.lookAt(0, 0, 0);
@@ -69,10 +75,11 @@ map.lookAt(0,0,0);
 scene.add(map);
 scene.add(camera);
 scene.add(TrackballCamera);
+scene.add(thirdPCamera);
 
 var trackballControls = new TrackballControls( TrackballCamera, renderer.domElement );
 
-var cameraFree = false; //Flack que ativa o modo de inspeção
+var cameraFree = 0; //Flack que ativa o modo de inspeção
 
 window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
 window.addEventListener( 'resize', function(){onWindowResize(TrackballCamera, renderer)}, false );
@@ -401,13 +408,13 @@ function addPhysicsCar(x, y, z){
   //cybertruck.mesh.position.set(0,10,0)
 
   function sync(dt) {
-      if (!cameraFree) speed = vehicle.getCurrentSpeedKmHour();
+      if (cameraFree == 0 || cameraFree == 2) speed = vehicle.getCurrentSpeedKmHour();
       else speed = cybertruck.speed;
       speedometer.innerHTML = (speed < 0 ? '(R) ' : '') + Math.abs(speed).toFixed(1) + ' km/h';
       breakingForce = 0;
       engineForce = 0;
 
-      if (cameraFree) {
+      if (cameraFree == 1) {
         vehicle.setBrake(1000, 0);
         vehicle.setBrake(1000, 1);
         vehicle.setBrake(1000, 2);
@@ -731,11 +738,14 @@ function cameraControl()
 {
   changeCamera();
   
-  if (cameraFree)
+  if (cameraFree == 1)
     trackballUpdate()
-  else
-    cameraFollow();
-
+  else{
+    if(cameraFree == 0)
+      cameraFollow();
+    else
+      updateThirdPersonC();
+  }
 }
 function trackballUpdate(){
   trackballControls.update();
@@ -751,7 +761,9 @@ function changeCamera()
   {
     gameIsOnFlag = true;
     // Troca de camera
-    cameraFree = !cameraFree;
+    cameraFree++;
+    if(cameraFree == 3)
+      cameraFree = 0;
     setupCamera();
   }
 }
@@ -765,58 +777,72 @@ function switchLight()
 function setupCamera()
 {
   
-  if (!cameraFree)
+  if (cameraFree == 0)
     {
       // Quando desativado o trackball
       // Ativar outros objetos a serem visíveis
-      speedway.blocks.forEach(function(block){
+     /* speedway.blocks.forEach(function(block){
         block.cube.visible = true;
         block.cubeFundo.visible = true;
-      })
-      speedway.ramps.forEach(function(ramps){
-        ramps.ramp.visible = true;
-      })
-      speedway.muroDentro.forEach(function(block){
-        block.cube.visible = true;
-      })
-      speedway.muroFora.forEach(function(block){
-        block.cube.visible = true;
-      })
-      ground.visible = true;
-      switchLight()
+      })*/
+       //plane.visible = true;
+      //switchLight()
 
       physicsWorld.setGravity( new Ammo.btVector3( 0, -15.82, 0 ) )
     }
     else 
     {
-      // Quando ativado o trackball
-      // Arrumar Posicao
-      trackballControls.reset;
-      trackballControls.target.set( objectToFollow.position.x, objectToFollow.position.y, objectToFollow.position.z );
-      TrackballCamera.up.set( 0,1,0 );
-      TrackballCamera.position.set(objectToFollow.position.x + 80, 80, objectToFollow.position.z + 80);
-      TrackballCamera.lookAt(objectToFollow.position);
-      
-      // Desativar visibilidade de outros objetos
-       speedway.blocks.forEach(function(block){
-        block.cube.visible = false;
-        block.cubeFundo.visible = false;
-      })
-      speedway.ramps.forEach(function(ramps){
-        ramps.ramp.visible = false;
-      })
-      speedway.muroDentro.forEach(function(block){
-        block.cube.visible = false;
-      })
-      speedway.muroFora.forEach(function(block){
-        block.cube.visible = false;
-      })
+      if(cameraFree == 1)
+      {
+        // Quando ativado o trackball
+        // Arrumar Posicao
+        trackballControls.reset;
+        trackballControls.target.set( objectToFollow.position.x, objectToFollow.position.y, objectToFollow.position.z );
+        TrackballCamera.up.set( 0,1,0 );
+        TrackballCamera.position.set(objectToFollow.position.x + 80, 80, objectToFollow.position.z + 80);
+        TrackballCamera.lookAt(objectToFollow.position);
+        
+        // Desativar visibilidade de outros objetos
+        speedway.blocks.forEach(function(block){
+          block.cube.visible = false;
+          block.cubeFundo.visible = false;
+        })
+        speedway.muroDentro.forEach(function(block) {
+          block.block.visible = false; 
+        })
+        speedway.muroFora.forEach(function(block) {
+          block.block.visible = false;
+        })
+        speedway.ramps.forEach(function(block) {
+          block.ramp.visible = false;  
+        })
 
-      ground.visible = false;
+        ground.visible = false;
 
-      switchLight()
+        switchLight()
 
-      physicsWorld.setGravity( new Ammo.btVector3( 0, 0, 0 ) )
+        physicsWorld.setGravity( new Ammo.btVector3( 0, 0, 0 ) )
+      }else{
+
+        speedway.blocks.forEach(function(block){
+          block.cube.visible = true;
+          block.cubeFundo.visible = true;
+        })
+        speedway.muroDentro.forEach(function(block) {
+          block.block.visible = true; 
+        })
+        speedway.muroFora.forEach(function(block) {
+          block.block.visible = true;
+        })
+        speedway.ramps.forEach(function(block) {
+          block.ramp.visible = true;  
+        })
+        ground.visible = true;
+        switchLight()
+  
+        physicsWorld.setGravity( new Ammo.btVector3( 0, -15.82, 0 ) )
+
+      }
     
     }
 }
@@ -832,9 +858,43 @@ function cameraFollow()
   directionalLight.target = cybertruck.wheelsH[2];
 }
 
+function calculateIdealOffset()
+{
+  var idealOffset = new THREE.Vector3(0, 10, -30);
+  //var idealOffset = new THREE.Vector3();
+  const quaternion = new THREE.Quaternion();
+  quaternion.setFromEuler(cybertruck.mesh.rotation);
+  idealOffset.applyQuaternion(quaternion);
+  idealOffset.add(cybertruck.mesh.position);
+  return idealOffset;
+}
+
+function calculateIdealLookat()
+{
+  var idealLookat = new THREE.Vector3(0, 10, 50);
+  //var idealLookat = new THREE.Vector3();
+  const quaternion = new THREE.Quaternion();
+  quaternion.setFromEuler(cybertruck.mesh.rotation);
+  idealLookat.applyQuaternion(quaternion);
+  idealLookat.add(cybertruck.mesh.position);
+  return idealLookat;
+}
+
+function updateThirdPersonC()
+{
+  var idealOffset = calculateIdealOffset();
+  var idealLookat = calculateIdealLookat();
+
+  thirdPCamera.position.copy(idealOffset);
+  thirdPCamera.lookAt(idealLookat);
+
+  directionalLight.position.set(cybertruck.mesh.position.x + 20, 50, cybertruck.mesh.position.z + 80);
+  directionalLight.target = cybertruck.wheelsH[2];
+}
+
 function cameraRenderer ()
 {
-  if (cameraFree)
+  if (cameraFree == 1)
   {
     var width = window.innerWidth;
     var height = window.innerHeight;
@@ -848,25 +908,45 @@ function cameraRenderer ()
   }
   else
   {
-  
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+    if(cameraFree == 0)
+    {
+      var width = window.innerWidth;
+      var height = window.innerHeight;
 
-    renderer.setViewport(0, 0, width, height); // Reset viewport    
-    renderer.setScissorTest(false); // Disable scissor to paint the entire window
-    renderer.setClearColor("rgb(80, 70, 170)");    
-    renderer.clear();   // Clean the window
-    renderer.render(scene, camera);
+      renderer.setViewport(0, 0, width, height); // Reset viewport    
+      renderer.setScissorTest(false); // Disable scissor to paint the entire window
+      renderer.setClearColor("rgb(80, 70, 170)");    
+      renderer.clear();   // Clean the window
+      renderer.render(scene, camera);
 
-    var offset = 30; 
-    renderer.setViewport(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth);  // Set virtual camera viewport  
-    renderer.setScissor(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth); // Set scissor with the same size as the viewport
-    renderer.setScissorTest(true); // Enable scissor to paint only the scissor are (i.e., the small viewport)
-    renderer.setClearColor("rgb(60, 50, 150)");  // Use a darker clear color in the small viewport 
-    renderer.clear(); // Clean the small viewport
+      var offset = 30; 
+      renderer.setViewport(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth);  // Set virtual camera viewport  
+      renderer.setScissor(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth); // Set scissor with the same size as the viewport
+      renderer.setScissorTest(true); // Enable scissor to paint only the scissor are (i.e., the small viewport)
+      renderer.setClearColor("rgb(60, 50, 150)");  // Use a darker clear color in the small viewport 
+      renderer.clear(); // Clean the small viewport
 
-    renderer.render(scene, map);
-    //console.log(map)
+      renderer.render(scene, map);
+      //console.log(map)
+    }else{
+      var width = window.innerWidth;
+      var height = window.innerHeight;
+
+      renderer.setViewport(0, 0, width, height); // Reset viewport    
+      renderer.setScissorTest(false); // Disable scissor to paint the entire window
+      renderer.setClearColor("rgb(80, 70, 170)");    
+      renderer.clear();   // Clean the window
+      renderer.render(scene, thirdPCamera);
+
+      var offset = 30; 
+      renderer.setViewport(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth);  // Set virtual camera viewport  
+      renderer.setScissor(width-vcWidth-offset, height-vcHeidth-offset, vcWidth, vcHeidth); // Set scissor with the same size as the viewport
+      renderer.setScissorTest(true); // Enable scissor to paint only the scissor are (i.e., the small viewport)
+      renderer.setClearColor("rgb(60, 50, 150)");  // Use a darker clear color in the small viewport 
+      renderer.clear(); // Clean the small viewport
+
+      renderer.render(scene, map);
+    }
   }
 }
 
