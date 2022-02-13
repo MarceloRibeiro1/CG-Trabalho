@@ -45,7 +45,7 @@ var spotLight = new THREE.SpotLight("rgb(255,255,255)");
   spotLight.shadow.mapSize.height = 512;
   spotLight.shadow.camera.fov = radiansToDegrees(spotLight.angle);
   spotLight.shadow.camera.near = .2;    
-  spotLight.shadow.camera.far = 20.0;        
+  spotLight.shadow.camera.far = 20.0;       
 
 var light = new THREE.Object3D();
 light.add(spotLight);
@@ -163,13 +163,15 @@ cmesh.scale.set(carResize,carResize,carResize);
 cyber.add(cmesh);
 scene.add(cyber);
 
+var angle = 0;
+
 function keyboardUpdate2() {
 
 	keyboard.update();
 
 	
 
-	var angle = degreesToRadians(2);
+	
 	if ( keyboard.pressed("up")){
 	cybertruck.wheelsH[0].rotateX(degreesToRadians(5));
 	cybertruck.wheelsH[1].rotateX(degreesToRadians(5));
@@ -186,26 +188,27 @@ function keyboardUpdate2() {
 
 	if ( keyboard.pressed("left")){
 
-		//if(cybertruck.wheelsH[0].rotation.y < 0.4){
+		console.log(angle);
+		if(angle < degreesToRadians(30)){
+			cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
+			cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
+			angle += degreesToRadians(3);	
 			cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), angle);
 			cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), angle);
-		//}
+			}
 
-	console.log("Euler Angle Y = " + cybertruck.wheelsH[0].rotation.y);
-	console.log("Euler Angle X = " + cybertruck.wheelsH[0].rotation.x);
-	console.log("Euler Angle X + Y = " + cybertruck.wheelsH[0].rotation.x +  cybertruck.wheelsH[0].rotation.y);
 	
 }
 	if ( keyboard.pressed("right")){
-
-		//if(Math.abs(cybertruck.wheelsH[0].rotation.y) < -0.4){
-			cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
-			cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
-
-			console.log("Euler Angle Y = " + cybertruck.wheelsH[0].rotation.y);
-	console.log("Euler Angle X = " + cybertruck.wheelsH[0].rotation.x);
-	console.log("Euler Angle X + Y = " + cybertruck.wheelsH[0].rotation.x +  cybertruck.wheelsH[0].rotation.y);
-		//}
+		console.log(degreesToRadians(30));
+		console.log(angle);
+		if(angle > -degreesToRadians(30)){
+		cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
+		cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
+		angle -= degreesToRadians(3);	
+		cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), angle);
+		cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), angle);
+		}
 		
 	}
 	
