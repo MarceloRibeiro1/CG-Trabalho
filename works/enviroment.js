@@ -173,7 +173,9 @@ export class Speedway{
             this.zInitialBlock = 0;
             this.sideSize = sideSize;
             this.type = type;
-            this.blocks = [new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock, true, false, false,trackImgX)];
+            var block1 = new Block(this.xInitialBlock, this.yInitialBlock, this.zInitialBlock, true, false, false,trackImgX);
+            block1.cube.rotateY(degreesToRadians(90));
+            this.blocks = [block1];
             this.muroDentro = [new Block(this.xInitialBlock - (this.blockSize/2), this.yInitialBlock, this.zInitialBlock, false, true, false,trackImgX)];
             this.muroFora = [new Block(this.xInitialBlock + (this.blockSize/2), this.yInitialBlock, this.zInitialBlock , false, true, false,trackImgX)];
             this.xPos = this.xInitialBlock;

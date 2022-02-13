@@ -166,19 +166,49 @@ scene.add(cyber);
 function keyboardUpdate2() {
 
 	keyboard.update();
- 
-	if ( keyboard.pressed("up")){
-	cybertruck.wheelsH[0].rotateZ(degreesToRadians(5));
-	cybertruck.wheelsH[1].rotateZ(degreesToRadians(5));
-	cybertruck.wheelsH[2].rotateZ(degreesToRadians(5));
-	cybertruck.wheelsH[3].rotateZ(degreesToRadians(5));
-	}
-     /*
-	if ( keyboard.pressed("down"){}
 
-	if ( keyboard.pressed("left")){}
-	if ( keyboard.pressed("right")){}
-*/
+	
+
+	var angle = degreesToRadians(2);
+	if ( keyboard.pressed("up")){
+	cybertruck.wheelsH[0].rotateX(degreesToRadians(5));
+	cybertruck.wheelsH[1].rotateX(degreesToRadians(5));
+	cybertruck.wheelsH[2].rotateX(degreesToRadians(5));
+	cybertruck.wheelsH[3].rotateX(degreesToRadians(5));
+	}
+
+	if ( keyboard.pressed("down")){
+		cybertruck.wheelsH[0].rotateX(-degreesToRadians(5));
+		cybertruck.wheelsH[1].rotateX(-degreesToRadians(5));
+		cybertruck.wheelsH[2].rotateX(-degreesToRadians(5));
+		cybertruck.wheelsH[3].rotateX(-degreesToRadians(5));
+	}
+
+	if ( keyboard.pressed("left")){
+
+		//if(cybertruck.wheelsH[0].rotation.y < 0.4){
+			cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), angle);
+			cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), angle);
+		//}
+
+	console.log("Euler Angle Y = " + cybertruck.wheelsH[0].rotation.y);
+	console.log("Euler Angle X = " + cybertruck.wheelsH[0].rotation.x);
+	console.log("Euler Angle X + Y = " + cybertruck.wheelsH[0].rotation.x +  cybertruck.wheelsH[0].rotation.y);
+	
+}
+	if ( keyboard.pressed("right")){
+
+		//if(Math.abs(cybertruck.wheelsH[0].rotation.y) < -0.4){
+			cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
+			cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
+
+			console.log("Euler Angle Y = " + cybertruck.wheelsH[0].rotation.y);
+	console.log("Euler Angle X = " + cybertruck.wheelsH[0].rotation.x);
+	console.log("Euler Angle X + Y = " + cybertruck.wheelsH[0].rotation.x +  cybertruck.wheelsH[0].rotation.y);
+		//}
+		
+	}
+	
 }
 
 
@@ -236,7 +266,7 @@ onRenderFcts.push(function(){
 
 	spotLight.position.copy(camera.position);
 
-	keyboardUpdate2()
+	keyboardUpdate2();
 })
 
 
