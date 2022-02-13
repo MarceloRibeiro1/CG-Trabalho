@@ -188,7 +188,6 @@ function keyboardUpdate2() {
 
 	if ( keyboard.pressed("left")){
 
-		console.log(angle);
 		if(angle < degreesToRadians(30)){
 			cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
 			cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
@@ -200,8 +199,6 @@ function keyboardUpdate2() {
 	
 }
 	if ( keyboard.pressed("right")){
-		console.log(degreesToRadians(30));
-		console.log(angle);
 		if(angle > -degreesToRadians(30)){
 		cybertruck.wheelsH[0].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
 		cybertruck.wheelsH[1].rotateOnWorldAxis(new THREE.Vector3(0,1,0), -angle);
