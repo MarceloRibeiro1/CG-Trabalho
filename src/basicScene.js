@@ -1,61 +1,127 @@
 import * as THREE from  '../build/three.module.js';
 import Stats from       '../build/jsm/libs/stats.module.js';
+import {GUI} from       '../build/jsm/libs/dat.gui.module.js';
 import {TrackballControls} from '../build/jsm/controls/TrackballControls.js';
 import {initRenderer, 
         initCamera,
-        InfoBox,
-        onWindowResize} from "../libs/util/util.js";
+        initDefaultBasicLight,
+        createGroundPlane,
+        onWindowResize, 
+        lightFollowingCamera,
+        degreesToRadians} from "../libs/util/util.js";
 
-var stats = new Stats();          // To show FPS information
 var scene = new THREE.Scene();    // Create main scene
+var stats = new Stats();          // To show FPS information
+
 var renderer = initRenderer();    // View function in util/utils
-var camera = initCamera(new THREE.Vector3(0, -30, 15)); // Init camera in this position
+renderer.setClearColor("rgb(30, 30, 40)");
+var camera = initCamera(new THREE.Vector3(0.5,5,8)); // Init camera in this position
+var light = initDefaultBasicLight(scene, false, new THREE.Vector3(25, 30, 20)); // Use default light
+  
+// Listen window size changes
+window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
+
+var groundPlane = createGroundPlane(23, 23); // width and height
+  groundPlane.rotateX(degreesToRadians(-90));
+scene.add(groundPlane);
+
+// Show axes (parameter is size of each axis)
+var axesHelper = new THREE.AxesHelper( 5 );
+  axesHelper.visible = false;
+scene.add( axesHelper );
 
 // Enable mouse rotation, pan, zoom etc.
 var trackballControls = new TrackballControls( camera, renderer.domElement );
 
-// Show axes (parameter is size of each axis)
-var axesHelper = new THREE.AxesHelper( 12 );
-scene.add( axesHelper );
+// Add object to scene
+let spGroup; // Will receive the auxiliary spheres representing the points
+createCustomGeometry();
 
-// create the ground plane
-var planeGeometry = new THREE.PlaneGeometry(20, 20);
-planeGeometry.translate(0.0, 0.0, -0.02); // To avoid conflict with the axeshelper
-var planeMaterial = new THREE.MeshBasicMaterial({
-    color: "rgba(150, 150, 150)",
-    side: THREE.DoubleSide,
-});
-var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-// add the plane to the scene
-scene.add(plane);
-
-// create a cube
-var cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
-var cubeMaterial = new THREE.MeshNormalMaterial();
-var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-// position the cube
-cube.position.set(0.0, 0.0, 2.0);
-// add the cube to the scene
-scene.add(cube);
-
-// Use this to show information onscreen
-var controls = new InfoBox();
-  controls.add("Basic Scene");
-  controls.addParagraph();
-  controls.add("Use mouse to interact:");
-  controls.add("* Left button to rotate");
-  controls.add("* Right button to translate (pan)");
-  controls.add("* Scroll to zoom in/out.");
-  controls.show();
-
-// Listen window size changes
-window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)}, false );
-
+buildInterface();
 render();
+
+function createCustomGeometry()
+{
+  // Set the Buffer Geometry
+  const geometry = new THREE.BufferGeometry();
+
+  // Create all vertices of the object
+  // In this example, we have six vertices
+  const v = [
+    [-3.0, 0.0,  0.5], // p2    
+    [ 0.0, 3.5,  0.5], // p3
+    [ 0.0, 0.0,  2.5], // p4
+    [ 3.0, 0.0, -3.0], // p5        
+  ] 
+
+  // Set the triangles, vertex by vertex
+  const buffer = new Float32Array( [
+    v[0][0], v[0][1], v[0][2],
+    v[1][0], v[1][1], v[1][2],    
+    v[2][0], v[2][1], v[2][2], 
+
+    v[1][0], v[1][1], v[1][2],
+    v[2][0], v[2][1], v[2][2],    
+    v[3][0], v[3][1], v[3][2], 
+  ] );
+    
+  // itemSize = 3 because there are 3 values (components) per vertex
+  geometry.setAttribute( 'position', new THREE.BufferAttribute( buffer, 3 ) );
+  geometry.computeVertexNormals ();
+  const material = new THREE.MeshPhongMaterial({color:"rgb(60,90,240)"});
+    material.side =  THREE.DoubleSide; // Show front and back polygons
+  const mesh = new THREE.Mesh( geometry, material );
+
+  scene.add(mesh);
+
+  // Create auxiliary spheres to visualize the points
+  createPointSpheres(v);  
+}
+
+function createPointSpheres(points)
+{
+  spGroup = new THREE.Object3D();
+  var spMaterial = new THREE.MeshPhongMaterial({color:"rgb(255,255,0)"});
+  var spGeometry = new THREE.SphereGeometry(0.1);
+  points.forEach(function (points) {
+    var spMesh = new THREE.Mesh(spGeometry, spMaterial);   
+    spMesh.position.set(points[0], points[1], points[2]);
+    spGroup.add(spMesh);
+  });
+  // add the points as a group to the scene
+  scene.add(spGroup);  
+}
+
+function buildInterface()
+{
+  var controls = new function ()
+  {
+    this.viewPoints = true;
+    this.viewAxes = false;
+
+    this.onViewPoints = function(){
+      spGroup.visible = this.viewPoints;
+    };
+    this.onViewAxes = function(){
+      axesHelper.visible = this.viewAxes;
+    };
+  };
+
+  // GUI interface
+  var gui = new GUI();
+  gui.add(controls, 'viewPoints', false)
+    .name("View Points")
+    .onChange(function(e) { controls.onViewPoints() });
+  gui.add(controls, 'viewAxes', false)
+    .name("View Axes")
+    .onChange(function(e) { controls.onViewAxes() });
+}
+
 function render()
 {
   stats.update(); // Update FPS
-  trackballControls.update(); // Enable mouse movements
-  requestAnimationFrame(render);
+  trackballControls.update();
+  lightFollowingCamera(light, camera) // Makes light follow the camera  
+  requestAnimationFrame(render); // Show events
   renderer.render(scene, camera) // Render scene
 }
