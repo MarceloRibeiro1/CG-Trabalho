@@ -1,6 +1,6 @@
-import * as THREE from '../../build/three.module.js';
 //import * as Ammos from '../libs/other/ammo.wasm.js';
 import {ConvexGeometry} from '../build/jsm/geometries/ConvexGeometry.js';
+import * as THREE from '../../build/three.module.js';
 
 export class Cybertruck {
 	constructor(licensePlateImg,glassImg,wheel2Img,wheelImg) {

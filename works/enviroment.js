@@ -1,5 +1,4 @@
 import * as THREE from '../../build/three.module.js';
-import {TrackballControls} from '../../build/jsm/controls/TrackballControls.js';
 import { degreesToRadians} from "../libs/util/util.js";
 import { Vector2 } from '../build/three.module.js';
 
