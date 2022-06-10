@@ -1,14 +1,10 @@
 import * as THREE from  '../build/three.module.js';
 import Stats from       '../build/jsm/libs/stats.module.js';
 import { Cybertruck } from       './cybertruck.js';
-import {ConvexGeometry} from '../build/jsm/geometries/ConvexGeometry.js';
-import {TeapotGeometry} from '../build/jsm/geometries/TeapotGeometry.js';
 import {TrackballControls} from '../build/jsm/controls/TrackballControls.js';
 import KeyboardState from '../libs/util/KeyboardState.js';
 import {initRenderer,
-      InfoBox,
-      degreesToRadians} from "../libs/util/util.js";
-
+      InfoBox} from "../libs/util/util.js";
 import {LapInfo, Stopwatch, Speedway, gameInfo} from './enviroment.js';
     
 
